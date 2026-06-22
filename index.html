@@ -561,95 +561,7 @@ body{
 <!-- SheetJS for Excel export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- Firebase SDK (compat) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBQcQygZgpJaxKohOPNeyhpTis_Aop-bNU",
-    authDomain: "hl-money.firebaseapp.com",
-    projectId: "hl-money",
-    storageBucket: "hl-money.firebasestorage.app",
-    messagingSenderId: "1039542841259",
-    appId: "1:1039542841259:web:a91bc5ef2e699707a52cee"
-  };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  const USER_ID = 'xuechen_hl';
-  const docRef = db.collection('moneyapp').doc(USER_ID);
-
-  window.syncToCloud = async function(data) {
-    try {
-      await docRef.set({
-        records: JSON.stringify(data.records||[]),
-        repayments: JSON.stringify(data.repayments||[]),
-        installments: JSON.stringify(data.installments||[]),
-        advances: JSON.stringify(data.advances||[]),
-        fixedItems: JSON.stringify(data.fixedItems||[]),
-        settings: JSON.stringify(data.settings||{}),
-        updatedAt: new Date().toISOString()
-      });
-      window._cloudStatus = 'synced';
-      updateSyncBadge('synced');
-    } catch(e) {
-      console.error('同步失敗', e);
-      updateSyncBadge('error');
-    }
-  };
-
-  window.loadFromCloud = async function() {
-    try {
-      const snap = await docRef.get();
-      if(snap.exists) {
-        const d = snap.data();
-        return {
-          records: JSON.parse(d.records||'[]'),
-          repayments: JSON.parse(d.repayments||'[]'),
-          installments: JSON.parse(d.installments||'[]'),
-          advances: JSON.parse(d.advances||'[]'),
-          fixedItems: JSON.parse(d.fixedItems||'[]'),
-          settings: JSON.parse(d.settings||'{}'),
-          updatedAt: d.updatedAt
-        };
-      }
-      return null;
-    } catch(e) {
-      console.error('載入失敗', e);
-      return null;
-    }
-  };
-
-  // 即時監聽其他裝置更新
-  docRef.onSnapshot((snap) => {
-    if(snap.exists && window._firebaseReady) {
-      const d = snap.data();
-      const remoteTime = d.updatedAt || '';
-      if(remoteTime > (window._lastSyncTime||'')) {
-        window._lastSyncTime = remoteTime;
-        try {
-          records = JSON.parse(d.records||'[]');
-          repayments = JSON.parse(d.repayments||'[]');
-          installments = JSON.parse(d.installments||'[]');
-          advances = JSON.parse(d.advances||'[]');
-          fixedItems = JSON.parse(d.fixedItems||'[]');
-          Object.assign(settings, JSON.parse(d.settings||'{}'));
-          localStorage.setItem('xz3_rec', d.records);
-          localStorage.setItem('xz3_repay', d.repayments);
-          localStorage.setItem('xz3_inst', d.installments);
-          localStorage.setItem('xz3_adv', d.advances);
-          localStorage.setItem('xz3_fixed', d.fixedItems);
-          localStorage.setItem('xz3_settings', d.settings);
-          updateAll();
-          updateSyncBadge('synced');
-        } catch(e) { console.error(e); }
-      }
-    }
-  });
-
-  window._cloudReady = true;
-  console.log('Firebase compat 初始化完成');
-</script>
 
 </head>
 <body>
@@ -665,7 +577,7 @@ body{
       <div class="top-bar-date">
         <div id="today-str"></div>
         <div style="color:var(--gold);letter-spacing:0.12em">雪人胖胖版 ✦</div>
-        <div id="sync-badge" style="font-size:9px;letter-spacing:0.1em;margin-top:2px;color:var(--text3)">⏳ 連線中</div>
+
       </div>
     </div>
   </div>
@@ -1040,6 +952,64 @@ body{
   </div>
 </div>
 
+
+<!-- 新增/編輯帳戶 MODAL -->
+<div class="modal-overlay hidden" id="acct-modal">
+  <div class="modal-box">
+    <h3 id="acct-modal-title">新增帳戶</h3>
+    <input type="hidden" id="acct-edit-id">
+    <div class="modal-label">帳戶名稱</div>
+    <input type="text" class="text-inp" id="acct-name-inp" placeholder="例：凱基銀行、現金">
+    <div class="modal-label">目前餘額</div>
+    <input type="number" class="text-inp" id="acct-bal-inp" placeholder="0">
+    <div class="modal-label">更新日期標記（選填）</div>
+    <input type="text" class="text-inp" id="acct-updated-inp" placeholder="例：06/22">
+    <div id="acct-delete-wrap" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light)">
+      <button onclick="deleteAccount()" style="width:100%;background:none;border:1px solid var(--red);color:var(--red);padding:9px;font-size:10px;cursor:pointer;font-family:inherit;letter-spacing:0.15em;text-transform:uppercase;border-radius:var(--radius)">刪除此帳戶</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('acct-modal')">取消</button>
+      <button class="btn-confirm" onclick="saveAccount()">✓ 儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增/編輯信用卡 MODAL -->
+<div class="modal-overlay hidden" id="card-modal">
+  <div class="modal-box">
+    <h3 id="card-modal-title">新增信用卡</h3>
+    <input type="hidden" id="card-edit-id">
+    <div class="modal-label">卡片名稱</div>
+    <input type="text" class="text-inp" id="card-name-inp" placeholder="例：中信信用卡、台新 Richart">
+    <div class="modal-label">信用額度</div>
+    <input type="number" class="text-inp" id="card-limit-inp" placeholder="0">
+    <div class="modal-label">未出帳金額</div>
+    <input type="number" class="text-inp" id="card-unbilled-inp" placeholder="0">
+    <div class="modal-label">實際可用額度</div>
+    <input type="number" class="text-inp" id="card-avail-inp" placeholder="0">
+    <div class="modal-label">帳單金額</div>
+    <input type="number" class="text-inp" id="card-bill-inp" placeholder="0">
+    <div class="modal-label">帳單狀態</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="choice-btn selected" id="card-status-paid" onclick="selCardStatus('paid',this)">✅ 已繳清</button>
+      <button class="choice-btn" id="card-status-due" onclick="selCardStatus('due',this)">⚠️ 待繳</button>
+    </div>
+    <div class="modal-label">結帳日（幾號）</div>
+    <input type="number" class="text-inp" id="card-billing-day-inp" placeholder="例：25" min="1" max="31">
+    <div class="modal-label">繳款截止日（幾號）</div>
+    <input type="number" class="text-inp" id="card-due-day-inp" placeholder="例：13" min="1" max="31">
+    <div class="modal-label">繳款截止（月/日，待繳時顯示）</div>
+    <input type="text" class="text-inp" id="card-due-date-inp" placeholder="例：07/02">
+    <div id="card-delete-wrap" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light)">
+      <button onclick="deleteCard()" style="width:100%;background:none;border:1px solid var(--red);color:var(--red);padding:9px;font-size:10px;cursor:pointer;font-family:inherit;letter-spacing:0.15em;text-transform:uppercase;border-radius:var(--radius)">刪除此信用卡</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('card-modal')">取消</button>
+      <button class="btn-confirm" onclick="saveCard()">✓ 儲存</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1147,6 +1117,20 @@ let settings={
     cathay_cc:{amount:5840,status:'paid',billingDay:24,dueDay:9,label:'每月24日結帳 · 9日扣繳',due:''},
   },
   ccAvail:{ctbc_cc:36349,taishin:75889,cathay_cc:40732},
+  // 動態帳戶清單
+  accounts:[
+    {id:'kaiji',    label:'凱基銀行',    updated:'06/22'},
+    {id:'ctbc_b',   label:'中信活期',    updated:'06/22'},
+    {id:'cathay_b', label:'國泰CUBE存款',updated:'06/22'},
+    {id:'linepay_m',label:'LINE Pay',    updated:'06/22'},
+    {id:'cash',     label:'現金',        updated:'06/22'},
+  ],
+  // 動態信用卡清單
+  cards:[
+    {id:'ctbc_cc',  label:'中信信用卡',  billingDay:25,dueDay:13},
+    {id:'taishin',  label:'台新 Richart',billingDay:null,dueDay:2},
+    {id:'cathay_cc',label:'國泰CUBE卡',  billingDay:24,dueDay:9},
+  ],
 };
 
 let viewYear=2026, viewMonth=5;
@@ -1256,6 +1240,20 @@ function load(){
   if(newInsts.length>0){installments=[...installments,...newInsts];localStorage.setItem('xz3_inst',JSON.stringify(installments));}
   try{advances=JSON.parse(localStorage.getItem('xz3_adv')||JSON.stringify(defaultAdv));}catch(e){advances=defaultAdv;}
   try{fixedItems=JSON.parse(localStorage.getItem('xz3_fixed')||JSON.stringify(defaultFixed));}catch(e){fixedItems=defaultFixed;}
+  // 同步動態帳戶到 PAYMENTS
+  if(settings.accounts && settings.accounts.length > 0){
+    settings.accounts.forEach(a=>{
+      if(!PAYMENTS.find(p=>p.id===a.id)) PAYMENTS.push({id:a.id,label:a.label,type:'bank',updated:a.updated});
+      else { const pi=PAYMENTS.findIndex(p=>p.id===a.id); if(pi>=0) PAYMENTS[pi].label=a.label; }
+    });
+  }
+  // 同步動態信用卡到 PAYMENTS
+  if(settings.cards && settings.cards.length > 0){
+    settings.cards.forEach(cc=>{
+      if(!PAYMENTS.find(p=>p.id===cc.id)) PAYMENTS.push({id:cc.id,label:cc.label,type:'cc'});
+      else { const pi=PAYMENTS.findIndex(p=>p.id===cc.id); if(pi>=0) PAYMENTS[pi].label=cc.label; }
+    });
+  }
 }
 function saveAll(){
   localStorage.setItem('xz3_rec',JSON.stringify(records));
@@ -1264,19 +1262,6 @@ function saveAll(){
   localStorage.setItem('xz3_inst',JSON.stringify(installments));
   localStorage.setItem('xz3_adv',JSON.stringify(advances));
   localStorage.setItem('xz3_fixed',JSON.stringify(fixedItems));
-  // 同步到雲端
-  if(window.syncToCloud) {
-    window._lastSyncTime = new Date().toISOString();
-    updateSyncBadge('syncing');
-    window.syncToCloud({records,repayments,settings,installments,advances,fixedItems});
-  }
-}
-function updateSyncBadge(status){
-  const el = document.getElementById('sync-badge');
-  if(!el) return;
-  if(status==='syncing'){el.textContent='↑ 同步中';el.style.color='var(--gold)';}
-  else if(status==='synced'){el.textContent='✦ 已同步';el.style.color='var(--green)';}
-  else{el.textContent='⚠ 同步失敗';el.style.color='var(--red)';}
 }
 
 function fmt(n){return '$ '+Math.round(n).toLocaleString();}
@@ -1808,13 +1793,16 @@ function renderAccounts(){
   const mr=monthRecs();
   const monthRepay=repayments.filter(r=>{const d=new Date(r.date);return d.getFullYear()===viewYear&&d.getMonth()===viewMonth;});
 
-  const bankHTML=PAYMENTS.filter(p=>p.type==='bank').map(p=>{
+  const accounts = settings.accounts || PAYMENTS.filter(p=>p.type==='bank').map(p=>({id:p.id,label:p.label,updated:p.updated}));
+  const bankHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+    <button class="add-btn" onclick="openAddAccount()">＋ 新增帳戶</button>
+  </div>`+accounts.map(p=>{
     const bal=settings.bankBalance[p.id]||0;
     const mExp=mr.filter(r=>r.payment===p.id&&['expense','subscription','advance'].includes(r.type)).reduce((s,r)=>s+r.amount,0);
     const mInc=mr.filter(r=>r.payment===p.id&&r.type==='income').reduce((s,r)=>s+r.amount,0);
-    return `<div class="acct-card">
+    return `<div class="acct-card" onclick="openEditAccount('${p.id}')" style="cursor:pointer">
       <div class="acct-top">
-        <div><div class="acct-name">${p.label}</div><div class="acct-updated">更新 ${p.updated||''}</div></div>
+        <div><div class="acct-name">${p.label}</div><div class="acct-updated">更新 ${p.updated||''} · 點擊編輯</div></div>
         <span class="acct-type-badge badge-bank">存款</span>
       </div>
       <div class="acct-balance-row">
@@ -1825,7 +1813,10 @@ function renderAccounts(){
     </div>`;
   }).join('');
 
-  const ccHTML=PAYMENTS.filter(p=>p.type==='cc').map(p=>{
+  const cards = settings.cards || PAYMENTS.filter(p=>p.type==='cc').map(p=>({id:p.id,label:p.label,billingDay:null,dueDay:null}));
+  const ccHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+    <button class="add-btn" onclick="openAddCard()">＋ 新增信用卡</button>
+  </div>`+cards.map(p=>{
     const limit=settings.ccLimit[p.id]||0;
     const bill=settings.ccBill[p.id]||{amount:0,status:'paid',label:'',due:''};
     const unbilled=settings.ccUnbilled[p.id]||0;
@@ -2049,24 +2040,11 @@ function renderSettings(){
   const el=document.getElementById('settings-area');
   el.innerHTML=`<div style="margin-top:10px">
   <div class="setting-group">
-    <h3>存款帳戶餘額</h3>
-    ${PAYMENTS.filter(p=>p.type==='bank').map(p=>`
-      <div class="setting-row"><label>${p.label}</label><input type="number" id="bal-${p.id}" value="${settings.bankBalance[p.id]||0}"></div>`).join('')}
-  </div>
-  <div class="setting-group">
-    <h3>信用卡額度</h3>
-    ${PAYMENTS.filter(p=>p.type==='cc').map(p=>`
-      <div class="setting-row"><label>${p.label}</label><input type="number" id="lim-${p.id}" value="${settings.ccLimit[p.id]||0}"></div>`).join('')}
-  </div>
-  <div class="setting-group">
-    <h3>信用卡未出帳</h3>
-    ${PAYMENTS.filter(p=>p.type==='cc').map(p=>`
-      <div class="setting-row"><label>${p.label}</label><input type="number" id="ub-${p.id}" value="${settings.ccUnbilled[p.id]||0}"></div>`).join('')}
-  </div>
-  <div class="setting-group">
-    <h3>信用卡可用額度（實際）</h3>
-    ${PAYMENTS.filter(p=>p.type==='cc').map(p=>`
-      <div class="setting-row"><label>${p.label}</label><input type="number" id="av-${p.id}" value="${(settings.ccAvail&&settings.ccAvail[p.id])||0}"></div>`).join('')}
+    <h3>帳戶與信用卡</h3>
+    <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="font-size:12px;color:var(--text2)">帳戶餘額、信用卡額度與帳單</div>
+      <div style="font-size:11px;color:var(--text3)">請至「帳戶」頁面點擊各卡片進行編輯</div>
+    </div>
   </div>
   <div class="setting-group">
     <h3>月預算設定</h3>
@@ -2092,14 +2070,7 @@ function renderSettings(){
   </div>`;
 }
 function saveSettings(){
-  PAYMENTS.filter(p=>p.type==='bank').forEach(p=>{settings.bankBalance[p.id]=parseInt(document.getElementById('bal-'+p.id).value)||0;});
-  PAYMENTS.filter(p=>p.type==='cc').forEach(p=>{
-    settings.ccLimit[p.id]=parseInt(document.getElementById('lim-'+p.id).value)||0;
-    settings.ccUnbilled[p.id]=parseInt(document.getElementById('ub-'+p.id).value)||0;
-    if(!settings.ccAvail)settings.ccAvail={};
-    const avEl=document.getElementById('av-'+p.id);
-    if(avEl)settings.ccAvail[p.id]=parseInt(avEl.value)||0;
-  });
+  // 帳戶與信用卡改在帳戶頁編輯
   Object.keys(settings.budgets).forEach(k=>{settings.budgets[k]=parseInt(document.getElementById('bgt-'+k).value)||0;});
   saveAll();updateAll();showToast('✅ 設定已儲存');
 }
@@ -2200,6 +2171,187 @@ function exportExcel(){
   showToast('✅ Excel 已匯出');
 }
 
+
+// ====== 帳戶管理 ======
+let _cardStatus = 'paid';
+
+function getAccounts(){ return settings.accounts || []; }
+function getCards(){ return settings.cards || []; }
+
+function openAddAccount(){
+  document.getElementById('acct-modal-title').textContent = '新增帳戶';
+  document.getElementById('acct-edit-id').value = '';
+  document.getElementById('acct-name-inp').value = '';
+  document.getElementById('acct-bal-inp').value = '';
+  document.getElementById('acct-updated-inp').value = '';
+  document.getElementById('acct-delete-wrap').style.display = 'none';
+  openModal('acct-modal');
+}
+
+function openEditAccount(id){
+  const acct = getAccounts().find(a=>a.id===id);
+  if(!acct) return;
+  document.getElementById('acct-modal-title').textContent = '編輯帳戶';
+  document.getElementById('acct-edit-id').value = id;
+  document.getElementById('acct-name-inp').value = acct.label;
+  document.getElementById('acct-bal-inp').value = settings.bankBalance[id]||0;
+  document.getElementById('acct-updated-inp').value = acct.updated||'';
+  document.getElementById('acct-delete-wrap').style.display = 'block';
+  openModal('acct-modal');
+}
+
+function saveAccount(){
+  const id = document.getElementById('acct-edit-id').value;
+  const label = document.getElementById('acct-name-inp').value.trim();
+  const bal = parseFloat(document.getElementById('acct-bal-inp').value)||0;
+  const updated = document.getElementById('acct-updated-inp').value.trim();
+  if(!label){showToast('請輸入帳戶名稱');return;}
+  if(!settings.accounts) settings.accounts=[];
+  if(!settings.bankBalance) settings.bankBalance={};
+  if(id){
+    // 編輯
+    const idx = settings.accounts.findIndex(a=>a.id===id);
+    if(idx>=0){
+      settings.accounts[idx].label = label;
+      settings.accounts[idx].updated = updated;
+    }
+    settings.bankBalance[id] = bal;
+  } else {
+    // 新增
+    const newId = 'acct_' + Date.now();
+    settings.accounts.push({id:newId, label, updated});
+    settings.bankBalance[newId] = bal;
+    // 同步加入 PAYMENTS
+    PAYMENTS.push({id:newId, label, type:'bank', updated});
+  }
+  // 同步更新 PAYMENTS label
+  const acct = settings.accounts.find(a=>a.id===id);
+  if(acct){
+    const pi = PAYMENTS.findIndex(p=>p.id===id);
+    if(pi>=0) PAYMENTS[pi].label = label;
+  }
+  saveAll(); closeModal('acct-modal'); renderAccounts(); showToast('✅ 已儲存');
+}
+
+function deleteAccount(){
+  const id = document.getElementById('acct-edit-id').value;
+  if(!id){return;}
+  if(!confirm('確定刪除此帳戶？')) return;
+  settings.accounts = (settings.accounts||[]).filter(a=>a.id!==id);
+  delete settings.bankBalance[id];
+  // 從 PAYMENTS 移除
+  const pi = PAYMENTS.findIndex(p=>p.id===id);
+  if(pi>=0) PAYMENTS.splice(pi,1);
+  saveAll(); closeModal('acct-modal'); renderAccounts(); showToast('已刪除');
+}
+
+// ====== 信用卡管理 ======
+function selCardStatus(s, el){
+  _cardStatus = s;
+  document.querySelectorAll('#card-modal .choice-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function openAddCard(){
+  document.getElementById('card-modal-title').textContent = '新增信用卡';
+  document.getElementById('card-edit-id').value = '';
+  document.getElementById('card-name-inp').value = '';
+  document.getElementById('card-limit-inp').value = '';
+  document.getElementById('card-unbilled-inp').value = '';
+  document.getElementById('card-avail-inp').value = '';
+  document.getElementById('card-bill-inp').value = '';
+  document.getElementById('card-billing-day-inp').value = '';
+  document.getElementById('card-due-day-inp').value = '';
+  document.getElementById('card-due-date-inp').value = '';
+  document.getElementById('card-delete-wrap').style.display = 'none';
+  _cardStatus = 'paid';
+  document.getElementById('card-status-paid').classList.add('selected');
+  document.getElementById('card-status-due').classList.remove('selected');
+  openModal('card-modal');
+}
+
+function openEditCard(id){
+  const card = getCards().find(cc=>cc.id===id);
+  if(!card) return;
+  document.getElementById('card-modal-title').textContent = '編輯信用卡';
+  document.getElementById('card-edit-id').value = id;
+  document.getElementById('card-name-inp').value = card.label;
+  document.getElementById('card-limit-inp').value = settings.ccLimit[id]||0;
+  document.getElementById('card-unbilled-inp').value = settings.ccUnbilled[id]||0;
+  document.getElementById('card-avail-inp').value = (settings.ccAvail&&settings.ccAvail[id])||0;
+  const bill = settings.ccBill[id]||{};
+  document.getElementById('card-bill-inp').value = bill.amount||0;
+  document.getElementById('card-billing-day-inp').value = card.billingDay||'';
+  document.getElementById('card-due-day-inp').value = card.dueDay||'';
+  document.getElementById('card-due-date-inp').value = bill.due||'';
+  document.getElementById('card-delete-wrap').style.display = 'block';
+  _cardStatus = bill.status||'paid';
+  document.getElementById('card-status-paid').classList.toggle('selected', _cardStatus==='paid');
+  document.getElementById('card-status-due').classList.toggle('selected', _cardStatus==='due');
+  openModal('card-modal');
+}
+
+function saveCard(){
+  const id = document.getElementById('card-edit-id').value;
+  const label = document.getElementById('card-name-inp').value.trim();
+  const limit = parseFloat(document.getElementById('card-limit-inp').value)||0;
+  const unbilled = parseFloat(document.getElementById('card-unbilled-inp').value)||0;
+  const avail = parseFloat(document.getElementById('card-avail-inp').value)||(limit-unbilled);
+  const billAmt = parseFloat(document.getElementById('card-bill-inp').value)||0;
+  const billingDay = parseInt(document.getElementById('card-billing-day-inp').value)||null;
+  const dueDay = parseInt(document.getElementById('card-due-day-inp').value)||null;
+  const due = document.getElementById('card-due-date-inp').value.trim();
+  if(!label){showToast('請輸入卡片名稱');return;}
+  if(!settings.cards) settings.cards=[];
+  if(!settings.ccLimit) settings.ccLimit={};
+  if(!settings.ccUnbilled) settings.ccUnbilled={};
+  if(!settings.ccAvail) settings.ccAvail={};
+  if(!settings.ccBill) settings.ccBill={};
+
+  // 建立 label 文字
+  let billLabel = '';
+  if(billingDay && dueDay) billLabel = `每月${billingDay}日結帳 · ${dueDay}日扣繳`;
+  else if(dueDay) billLabel = `繳款截止 ${due}`;
+  else if(due) billLabel = `繳款截止 ${due}`;
+
+  if(id){
+    // 編輯
+    const idx = settings.cards.findIndex(cc=>cc.id===id);
+    if(idx>=0){ settings.cards[idx]={...settings.cards[idx], label, billingDay, dueDay}; }
+    const pi = PAYMENTS.findIndex(p=>p.id===id);
+    if(pi>=0) PAYMENTS[pi].label = label;
+  } else {
+    // 新增
+    const newId = 'card_' + Date.now();
+    settings.cards.push({id:newId, label, billingDay, dueDay});
+    settings.ccLimit[id||newId] = limit;
+    settings.ccUnbilled[id||newId] = unbilled;
+    settings.ccAvail[id||newId] = avail;
+    settings.ccBill[id||newId] = {amount:billAmt, status:_cardStatus, label:billLabel, due};
+    PAYMENTS.push({id:newId, label, type:'cc'});
+    saveAll(); closeModal('card-modal'); renderAccounts(); showToast('✅ 已新增'); return;
+  }
+  settings.ccLimit[id] = limit;
+  settings.ccUnbilled[id] = unbilled;
+  settings.ccAvail[id] = avail;
+  settings.ccBill[id] = {amount:billAmt, status:_cardStatus, label:billLabel, due};
+  saveAll(); closeModal('card-modal'); renderAccounts(); showToast('✅ 已儲存');
+}
+
+function deleteCard(){
+  const id = document.getElementById('card-edit-id').value;
+  if(!id) return;
+  if(!confirm('確定刪除此信用卡？')) return;
+  settings.cards = (settings.cards||[]).filter(cc=>cc.id!==id);
+  delete settings.ccLimit[id];
+  delete settings.ccUnbilled[id];
+  if(settings.ccAvail) delete settings.ccAvail[id];
+  delete settings.ccBill[id];
+  const pi = PAYMENTS.findIndex(p=>p.id===id);
+  if(pi>=0) PAYMENTS.splice(pi,1);
+  saveAll(); closeModal('card-modal'); renderAccounts(); showToast('已刪除');
+}
+
 // ====== MODAL / NAV / TOAST ======
 function openModal(id){document.getElementById(id).classList.remove('hidden');}
 function closeModal(id){document.getElementById(id).classList.add('hidden');}
@@ -2221,40 +2373,8 @@ function showToast(msg){
 }
 
 // ====== INIT ======
-async function init(){
-  load(); // 先載入本地資料，讓 UI 快速顯示
-  // 嘗試從雲端載入最新資料
-  if(window.loadFromCloud) {
-    updateSyncBadge('syncing');
-    try {
-      const cloudData = await window.loadFromCloud();
-      if(cloudData) {
-        window._lastSyncTime = cloudData.updatedAt || '';
-        // 合併：歷史預設記錄保留，雲端資料為主
-        if(cloudData.records && cloudData.records.length > 0) {
-          // 合併歷史預設記錄
-          const existingIds = new Set(cloudData.records.map(r=>r.id));
-          const histToAdd = HISTORICAL_RECORDS.filter(r=>!existingIds.has(r.id));
-          records = [...cloudData.records, ...histToAdd];
-        }
-        if(cloudData.repayments) repayments = cloudData.repayments;
-        if(cloudData.installments && cloudData.installments.length > 0) installments = cloudData.installments;
-        if(cloudData.advances && cloudData.advances.length > 0) advances = cloudData.advances;
-        if(cloudData.fixedItems && cloudData.fixedItems.length > 0) fixedItems = cloudData.fixedItems;
-        if(cloudData.settings) Object.assign(settings, cloudData.settings);
-        updateSyncBadge('synced');
-        console.log('已從雲端載入資料');
-      } else {
-        // 第一次使用，上傳本地資料到雲端
-        window._lastSyncTime = new Date().toISOString();
-        window.syncToCloud({records,repayments,settings,installments,advances,fixedItems});
-      }
-    } catch(e) {
-      console.log('雲端載入失敗，使用本地資料', e);
-      updateSyncBadge('error');
-    }
-  }
-  window._firebaseReady = true;
+function init(){
+  load();
   const today=new Date();
   const wd='日一二三四五六';
   document.getElementById('today-str').textContent=`${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日（週${wd[today.getDay()]}）`;
@@ -2269,14 +2389,6 @@ async function init(){
 init();
 </script>
 
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js')
-      .then(()=>console.log('SW registered'))
-      .catch(e=>console.log('SW error',e));
-  });
-}
-</script>
+
 </body>
 </html>
