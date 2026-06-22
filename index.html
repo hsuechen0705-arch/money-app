@@ -557,6 +557,118 @@ body{
 }
 .analysis-area,.accounts-area{padding:0 20px}
 </style>
+
+<!-- SheetJS for Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBQcQygZgpJaxKohOPNeyhpTis_Aop-bNU",
+    authDomain: "hl-money.firebaseapp.com",
+    projectId: "hl-money",
+    storageBucket: "hl-money.firebasestorage.app",
+    messagingSenderId: "1039542841259",
+    appId: "1:1039542841259:web:a91bc5ef2e699707a52cee",
+    measurementId: "G-YE5J4N9950"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 固定使用同一個用戶文件（私人記帳，不需登入）
+  const USER_ID = 'xuechen_hl';
+  const docRef = doc(db, 'moneyapp', USER_ID);
+
+  // 上傳資料到 Firebase
+  window.syncToCloud = async function(data) {
+    try {
+      await setDoc(docRef, {
+        records: JSON.stringify(data.records||[]),
+        repayments: JSON.stringify(data.repayments||[]),
+        installments: JSON.stringify(data.installments||[]),
+        advances: JSON.stringify(data.advances||[]),
+        fixedItems: JSON.stringify(data.fixedItems||[]),
+        settings: JSON.stringify(data.settings||{}),
+        updatedAt: new Date().toISOString()
+      });
+      console.log('雲端同步成功');
+      window._cloudStatus = 'synced';
+      updateSyncBadge('synced');
+    } catch(e) {
+      console.error('雲端同步失敗', e);
+      window._cloudStatus = 'error';
+      updateSyncBadge('error');
+    }
+  };
+
+  // 從 Firebase 載入資料
+  window.loadFromCloud = async function() {
+    try {
+      const snap = await getDoc(docRef);
+      if(snap.exists()) {
+        const d = snap.data();
+        return {
+          records: JSON.parse(d.records||'[]'),
+          repayments: JSON.parse(d.repayments||'[]'),
+          installments: JSON.parse(d.installments||'[]'),
+          advances: JSON.parse(d.advances||'[]'),
+          fixedItems: JSON.parse(d.fixedItems||'[]'),
+          settings: JSON.parse(d.settings||'{}'),
+          updatedAt: d.updatedAt
+        };
+      }
+      return null;
+    } catch(e) {
+      console.error('載入雲端資料失敗', e);
+      return null;
+    }
+  };
+
+  // 即時監聽（其他裝置更新時自動同步）
+  window._unsubscribe = onSnapshot(docRef, (snap) => {
+    if(snap.exists() && window._firebaseReady) {
+      const d = snap.data();
+      const remoteTime = d.updatedAt || '';
+      const localTime = window._lastSyncTime || '';
+      // 只有當雲端比本地新時才更新
+      if(remoteTime > localTime && remoteTime !== window._lastSyncTime) {
+        window._lastSyncTime = remoteTime;
+        try {
+          const newRecords = JSON.parse(d.records||'[]');
+          const newSettings = JSON.parse(d.settings||'{}');
+          // 合併，以雲端為主
+          records = newRecords;
+          repayments = JSON.parse(d.repayments||'[]');
+          installments = JSON.parse(d.installments||'[]');
+          advances = JSON.parse(d.advances||'[]');
+          fixedItems = JSON.parse(d.fixedItems||'[]');
+          Object.assign(settings, newSettings);
+          // 更新本地 localStorage
+          localStorage.setItem('xz3_rec', d.records);
+          localStorage.setItem('xz3_repay', d.repayments);
+          localStorage.setItem('xz3_inst', d.installments);
+          localStorage.setItem('xz3_adv', d.advances);
+          localStorage.setItem('xz3_fixed', d.fixedItems);
+          localStorage.setItem('xz3_settings', d.settings);
+          updateAll();
+          updateSyncBadge('synced');
+          console.log('已從雲端更新資料');
+        } catch(e) {
+          console.error('解析雲端資料失敗', e);
+        }
+      }
+    }
+  });
+
+  window._firebaseReady = false;
+  window._cloudReady = true;
+  console.log('Firebase 初始化完成');
+</script>
+
 </head>
 <body>
 <div class="app">
@@ -571,6 +683,7 @@ body{
       <div class="top-bar-date">
         <div id="today-str"></div>
         <div style="color:var(--gold);letter-spacing:0.12em">雪人胖胖版 ✦</div>
+        <div id="sync-badge" style="font-size:9px;letter-spacing:0.1em;margin-top:2px;color:var(--text3)">⏳ 連線中</div>
       </div>
     </div>
   </div>
@@ -1169,6 +1282,19 @@ function saveAll(){
   localStorage.setItem('xz3_inst',JSON.stringify(installments));
   localStorage.setItem('xz3_adv',JSON.stringify(advances));
   localStorage.setItem('xz3_fixed',JSON.stringify(fixedItems));
+  // 同步到雲端
+  if(window.syncToCloud) {
+    window._lastSyncTime = new Date().toISOString();
+    updateSyncBadge('syncing');
+    window.syncToCloud({records,repayments,settings,installments,advances,fixedItems});
+  }
+}
+function updateSyncBadge(status){
+  const el = document.getElementById('sync-badge');
+  if(!el) return;
+  if(status==='syncing'){el.textContent='↑ 同步中';el.style.color='var(--gold)';}
+  else if(status==='synced'){el.textContent='✦ 已同步';el.style.color='var(--green)';}
+  else{el.textContent='⚠ 同步失敗';el.style.color='var(--red)';}
 }
 
 function fmt(n){return '$ '+Math.round(n).toLocaleString();}
@@ -1968,6 +2094,19 @@ function renderSettings(){
     }).join('')}
   </div>
   <button class="setting-save" onclick="saveSettings()">✦ 儲存設定</button>
+
+  <div class="setting-group" style="margin-top:16px">
+    <h3>匯出資料</h3>
+    <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:10px">
+      <div style="font-size:12px;color:var(--text2);line-height:1.8">
+        將所有記帳記錄匯出為 Excel 檔案<br>
+        <span style="color:var(--text3);font-size:11px">包含日期、類型、分類、金額、付款方式等</span>
+      </div>
+      <button onclick="exportExcel()" style="background:var(--gold);color:#fdfaf6;border:none;padding:10px 24px;font-size:10px;font-weight:500;cursor:pointer;font-family:inherit;letter-spacing:0.18em;text-transform:uppercase;border-radius:var(--radius)">
+        ↓ 匯出 Excel
+      </button>
+    </div>
+  </div>
   </div>`;
 }
 function saveSettings(){
@@ -1981,6 +2120,102 @@ function saveSettings(){
   });
   Object.keys(settings.budgets).forEach(k=>{settings.budgets[k]=parseInt(document.getElementById('bgt-'+k).value)||0;});
   saveAll();updateAll();showToast('✅ 設定已儲存');
+}
+
+
+// ====== EXCEL 匯出 ======
+function exportExcel(){
+  if(typeof XLSX==='undefined'){showToast('載入中，請稍後再試');return;}
+  if(!records||records.length===0){showToast('尚無記帳記錄');return;}
+
+  const wb = XLSX.utils.book_new();
+
+  // ── 全部記錄工作表 ──
+  const typeLabel={expense:'支出',income:'收入',subscription:'訂閱',advance:'代墊',mom:'媽媽卡',saving:'儲蓄',invest:'投資'};
+  const payLabel={kaiji:'凱基銀行',ctbc_b:'中信活期',cathay_b:'國泰CUBE存款',linepay_m:'LINE Pay',cash:'現金',mom_card:'媽媽卡',ctbc_cc:'中信信用卡',taishin:'台新 Richart',cathay_cc:'國泰CUBE卡',other_pay:'其他'};
+
+  const allRows = [
+    ['日期','類型','分類','項目','金額','付款方式','備註','媽媽卡','代墊款','代墊對象','婚禮']
+  ];
+  const sorted = [...records].sort((a,b)=>a.date.localeCompare(b.date));
+  sorted.forEach(r=>{
+    allRows.push([
+      r.date,
+      typeLabel[r.type]||r.type,
+      r.catLabel||r.cat,
+      r.item||'',
+      r.amount||0,
+      payLabel[r.payment]||r.payment||'',
+      r.note||'',
+      r.isMom?'是':'',
+      r.tags?.adv?'是':'',
+      r.advPerson||'',
+      r.tags?.wed?'是':'',
+    ]);
+  });
+
+  const ws_all = XLSX.utils.aoa_to_sheet(allRows);
+  // 欄位寬度
+  ws_all['!cols']=[{wch:12},{wch:8},{wch:12},{wch:20},{wch:10},{wch:14},{wch:16},{wch:8},{wch:8},{wch:10},{wch:8}];
+  XLSX.utils.book_append_sheet(wb, ws_all, '全部記錄');
+
+  // ── 按月份分工作表 ──
+  const byMonth={};
+  sorted.forEach(r=>{
+    const key=r.date.slice(0,7); // YYYY-MM
+    if(!byMonth[key])byMonth[key]=[];
+    byMonth[key].push(r);
+  });
+
+  Object.entries(byMonth).sort().forEach(([ym,recs])=>{
+    const label=ym.replace('-','年')+'月';
+    const rows=[['日期','類型','分類','項目','金額','付款方式','備註']];
+    recs.forEach(r=>{
+      rows.push([r.date,typeLabel[r.type]||r.type,r.catLabel||r.cat,r.item||'',r.amount||0,payLabel[r.payment]||r.payment||'',r.note||'']);
+    });
+    // 加月份合計
+    const totalInc=recs.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
+    const totalExp=recs.filter(r=>['expense','subscription','advance'].includes(r.type)).reduce((s,r)=>s+r.amount,0);
+    rows.push([]);
+    rows.push(['','','','收入合計',totalInc,'','']);
+    rows.push(['','','','支出合計',totalExp,'','']);
+    rows.push(['','','','結餘',totalInc-totalExp,'','']);
+
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:12},{wch:8},{wch:12},{wch:20},{wch:10},{wch:14},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, ws, label);
+  });
+
+  // ── 分期追蹤工作表 ──
+  if(installments&&installments.length>0){
+    const instRows=[['名稱','銀行/說明','每月金額','總期數','開始年月','結束年月','類型']];
+    installments.forEach(inst=>{
+      const em=inst.startMonth+inst.total-1;
+      const endLabel=`${inst.startYear+Math.floor(em/12)}年${(em%12)+1}月`;
+      instRows.push([inst.name,inst.bank,inst.monthly,inst.total,`${inst.startYear}年${inst.startMonth+1}月`,endLabel,inst.type==='transfer'?'每月轉帳':'信用卡分期']);
+    });
+    const ws_inst=XLSX.utils.aoa_to_sheet(instRows);
+    ws_inst['!cols']=[{wch:18},{wch:18},{wch:10},{wch:8},{wch:12},{wch:12},{wch:12}];
+    XLSX.utils.book_append_sheet(wb, ws_inst, '分期追蹤');
+  }
+
+  // ── 固定支出工作表 ──
+  if(fixedItems&&fixedItems.length>0){
+    const cycleLabel={monthly:'每月',quarterly:'每季',yearly:'每年',other:'其他'};
+    const fixRows=[['名稱','金額','週期','備註','狀態']];
+    fixedItems.forEach(f=>{
+      fixRows.push([f.name,f.amount,cycleLabel[f.cycle]||f.cycle,f.note||'',f.active?'啟用':'停用']);
+    });
+    const ws_fix=XLSX.utils.aoa_to_sheet(fixRows);
+    ws_fix['!cols']=[{wch:16},{wch:10},{wch:8},{wch:16},{wch:8}];
+    XLSX.utils.book_append_sheet(wb, ws_fix, '固定支出');
+  }
+
+  // 下載
+  const today=new Date();
+  const fname=`H&L記帳_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}.xlsx`;
+  XLSX.writeFile(wb, fname);
+  showToast('✅ Excel 已匯出');
 }
 
 // ====== MODAL / NAV / TOAST ======
@@ -2004,8 +2239,40 @@ function showToast(msg){
 }
 
 // ====== INIT ======
-function init(){
-  load();
+async function init(){
+  load(); // 先載入本地資料，讓 UI 快速顯示
+  // 嘗試從雲端載入最新資料
+  if(window.loadFromCloud) {
+    updateSyncBadge('syncing');
+    try {
+      const cloudData = await window.loadFromCloud();
+      if(cloudData) {
+        window._lastSyncTime = cloudData.updatedAt || '';
+        // 合併：歷史預設記錄保留，雲端資料為主
+        if(cloudData.records && cloudData.records.length > 0) {
+          // 合併歷史預設記錄
+          const existingIds = new Set(cloudData.records.map(r=>r.id));
+          const histToAdd = HISTORICAL_RECORDS.filter(r=>!existingIds.has(r.id));
+          records = [...cloudData.records, ...histToAdd];
+        }
+        if(cloudData.repayments) repayments = cloudData.repayments;
+        if(cloudData.installments && cloudData.installments.length > 0) installments = cloudData.installments;
+        if(cloudData.advances && cloudData.advances.length > 0) advances = cloudData.advances;
+        if(cloudData.fixedItems && cloudData.fixedItems.length > 0) fixedItems = cloudData.fixedItems;
+        if(cloudData.settings) Object.assign(settings, cloudData.settings);
+        updateSyncBadge('synced');
+        console.log('已從雲端載入資料');
+      } else {
+        // 第一次使用，上傳本地資料到雲端
+        window._lastSyncTime = new Date().toISOString();
+        window.syncToCloud({records,repayments,settings,installments,advances,fixedItems});
+      }
+    } catch(e) {
+      console.log('雲端載入失敗，使用本地資料', e);
+      updateSyncBadge('error');
+    }
+  }
+  window._firebaseReady = true;
   const today=new Date();
   const wd='日一二三四五六';
   document.getElementById('today-str').textContent=`${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日（週${wd[today.getDay()]}）`;
