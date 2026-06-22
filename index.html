@@ -561,32 +561,27 @@ body{
 <!-- SheetJS for Excel export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
   const firebaseConfig = {
     apiKey: "AIzaSyBQcQygZgpJaxKohOPNeyhpTis_Aop-bNU",
     authDomain: "hl-money.firebaseapp.com",
     projectId: "hl-money",
     storageBucket: "hl-money.firebasestorage.app",
     messagingSenderId: "1039542841259",
-    appId: "1:1039542841259:web:a91bc5ef2e699707a52cee",
-    measurementId: "G-YE5J4N9950"
+    appId: "1:1039542841259:web:a91bc5ef2e699707a52cee"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // 固定使用同一個用戶文件（私人記帳，不需登入）
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
   const USER_ID = 'xuechen_hl';
-  const docRef = doc(db, 'moneyapp', USER_ID);
+  const docRef = db.collection('moneyapp').doc(USER_ID);
 
-  // 上傳資料到 Firebase
   window.syncToCloud = async function(data) {
     try {
-      await setDoc(docRef, {
+      await docRef.set({
         records: JSON.stringify(data.records||[]),
         repayments: JSON.stringify(data.repayments||[]),
         installments: JSON.stringify(data.installments||[]),
@@ -595,21 +590,18 @@ body{
         settings: JSON.stringify(data.settings||{}),
         updatedAt: new Date().toISOString()
       });
-      console.log('雲端同步成功');
       window._cloudStatus = 'synced';
       updateSyncBadge('synced');
     } catch(e) {
-      console.error('雲端同步失敗', e);
-      window._cloudStatus = 'error';
+      console.error('同步失敗', e);
       updateSyncBadge('error');
     }
   };
 
-  // 從 Firebase 載入資料
   window.loadFromCloud = async function() {
     try {
-      const snap = await getDoc(docRef);
-      if(snap.exists()) {
+      const snap = await docRef.get();
+      if(snap.exists) {
         const d = snap.data();
         return {
           records: JSON.parse(d.records||'[]'),
@@ -623,31 +615,25 @@ body{
       }
       return null;
     } catch(e) {
-      console.error('載入雲端資料失敗', e);
+      console.error('載入失敗', e);
       return null;
     }
   };
 
-  // 即時監聽（其他裝置更新時自動同步）
-  window._unsubscribe = onSnapshot(docRef, (snap) => {
-    if(snap.exists() && window._firebaseReady) {
+  // 即時監聽其他裝置更新
+  docRef.onSnapshot((snap) => {
+    if(snap.exists && window._firebaseReady) {
       const d = snap.data();
       const remoteTime = d.updatedAt || '';
-      const localTime = window._lastSyncTime || '';
-      // 只有當雲端比本地新時才更新
-      if(remoteTime > localTime && remoteTime !== window._lastSyncTime) {
+      if(remoteTime > (window._lastSyncTime||'')) {
         window._lastSyncTime = remoteTime;
         try {
-          const newRecords = JSON.parse(d.records||'[]');
-          const newSettings = JSON.parse(d.settings||'{}');
-          // 合併，以雲端為主
-          records = newRecords;
+          records = JSON.parse(d.records||'[]');
           repayments = JSON.parse(d.repayments||'[]');
           installments = JSON.parse(d.installments||'[]');
           advances = JSON.parse(d.advances||'[]');
           fixedItems = JSON.parse(d.fixedItems||'[]');
-          Object.assign(settings, newSettings);
-          // 更新本地 localStorage
+          Object.assign(settings, JSON.parse(d.settings||'{}'));
           localStorage.setItem('xz3_rec', d.records);
           localStorage.setItem('xz3_repay', d.repayments);
           localStorage.setItem('xz3_inst', d.installments);
@@ -656,17 +642,13 @@ body{
           localStorage.setItem('xz3_settings', d.settings);
           updateAll();
           updateSyncBadge('synced');
-          console.log('已從雲端更新資料');
-        } catch(e) {
-          console.error('解析雲端資料失敗', e);
-        }
+        } catch(e) { console.error(e); }
       }
     }
   });
 
-  window._firebaseReady = false;
   window._cloudReady = true;
-  console.log('Firebase 初始化完成');
+  console.log('Firebase compat 初始化完成');
 </script>
 
 </head>
