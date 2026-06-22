@@ -1148,8 +1148,9 @@ const defaultInst=[
   {id:4,name:'✈️ 華航巴黎機票',bank:'台新 Richart 5202',monthly:2090,total:30,startYear:2026,startMonth:5,type:'normal'},
 ];
 const defaultAdv=[
-  {id:1,person:'姐姐',item:'新加坡商保養品分期',amount:13335,date:'2026-05-28',paid:0},
-  {id:2,person:'曾哥',item:'Alipay代墊',amount:3128,date:'2026-06-08',paid:0},
+  {id:1,person:'姐姐',item:'全美保養品',amount:80000,date:'2026-05-28',paid:0},
+  {id:2,person:'曾哥',item:'Alipay代墊',amount:3026,date:'2026-06-08',paid:0},
+  {id:3,person:'曾哥',item:'代墊款',amount:6449,date:'2026-06-22',paid:0},
 ];
 const defaultFixed=[
   {id:1,name:'Adobe Premiere',icon:'💻',amount:819,cycle:'monthly',note:'工作室',active:true},
@@ -1215,6 +1216,9 @@ const HISTORICAL_RECORDS = [
 
   // 台新新消費（從截圖）
   {id:202606101,type:'subscription',cat:'ai_tool',catLabel:'AI工具',catIcon:'🤖',item:'Anthropic Claude',amount:1426,payment:'taishin',note:'',date:'2026-06-22',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606200,type:'advance',cat:'adv',catLabel:'代墊款',catIcon:'💛',item:'曾哥代墊',amount:6449,payment:'taishin',note:'',date:'2026-06-22',tags:{adv:true,wed:false},advPerson:'曾哥',isMom:false},
+  {id:202606201,type:'expense',cat:'other',catLabel:'其他',catIcon:'📦',item:'大陸手續費',amount:206,payment:'taishin',note:'',date:'2026-06-22',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606202,type:'expense',cat:'food',catLabel:'餐飲',catIcon:'🍜',item:'晚餐（老撈）',amount:2420,payment:'taishin',note:'',date:'2026-06-22',tags:{adv:false,wed:false},advPerson:'',isMom:false},
   {id:202606102,type:'expense',cat:'entertainment',catLabel:'娛樂',catIcon:'🎬',item:'ATT 4 FUN',amount:1430,payment:'taishin',note:'',date:'2026-06-21',tags:{adv:false,wed:false},advPerson:'',isMom:false},
   {id:202606103,type:'expense',cat:'shopping',catLabel:'購物',catIcon:'🛍️',item:'EGGKA 洋裝',amount:2057,payment:'taishin',note:'',date:'2026-06-19',tags:{adv:false,wed:false},advPerson:'',isMom:false},
   {id:202606104,type:'expense',cat:'special',catLabel:'特別支出',catIcon:'✨',item:'考試費（分期）',amount:1130,payment:'taishin',note:'財團法人中華民國證券暨期貨市場',date:'2026-06-18',tags:{adv:false,wed:false},advPerson:'',isMom:false},
@@ -1239,6 +1243,19 @@ function load(){
   const newInsts=defaultInst.filter(i=>!instIds.has(i.id));
   if(newInsts.length>0){installments=[...installments,...newInsts];localStorage.setItem('xz3_inst',JSON.stringify(installments));}
   try{advances=JSON.parse(localStorage.getItem('xz3_adv')||JSON.stringify(defaultAdv));}catch(e){advances=defaultAdv;}
+  // 強制同步 defaultAdv 的更新（金額、項目名稱）
+  defaultAdv.forEach(da=>{
+    const idx=advances.findIndex(a=>a.id===da.id);
+    if(idx>=0){
+      // 更新金額和項目名稱，保留已收款進度
+      advances[idx].amount=da.amount;
+      advances[idx].item=da.item;
+      advances[idx].person=da.person;
+    } else {
+      advances.push(da);
+    }
+  });
+  localStorage.setItem('xz3_adv',JSON.stringify(advances));
   try{fixedItems=JSON.parse(localStorage.getItem('xz3_fixed')||JSON.stringify(defaultFixed));}catch(e){fixedItems=defaultFixed;}
   // 同步動態帳戶到 PAYMENTS
   if(settings.accounts && settings.accounts.length > 0){
@@ -1819,16 +1836,16 @@ function renderAccounts(){
   </div>`+cards.map(p=>{
     const limit=settings.ccLimit[p.id]||0;
     const bill=settings.ccBill[p.id]||{amount:0,status:'paid',label:'',due:''};
-    // 自動計算未出帳（當期刷卡記錄）
+    // ── 核心邏輯：以「實際可用額度」為基準 ──
+    // 1. 帳單金額（手動填，已繳清則0）
+    const billAmt = bill.status==='paid' ? 0 : (bill.manualAmount!=null ? bill.manualAmount : bill.amount||0);
+    // 2. 實際可用額度（從銀行App手動填）
+    const avail = (settings.ccAvail && settings.ccAvail[p.id] > 0)
+      ? settings.ccAvail[p.id] : limit - billAmt;
+    // 3. 未出帳 = 總額度 - 可用額度 - 帳單未繳（自動推算，含分期占額）
+    const unbilled = Math.max(0, limit - avail - billAmt);
+    // 4. 自動計算本期刷卡記錄（供參考）
     const autoUnbilled = calcCCUnbilled(p.id);
-    const manualUnbilled = settings.ccUnbilled[p.id]||0;
-    // 有設定結帳日就用自動計算，否則用手動
-    const unbilled = p.billingDay ? autoUnbilled : manualUnbilled;
-    // 帳單金額：若已繳清則0，否則用自動或手動
-    const autoBill = p.billingDay ? calcCCBillAmount(p.id) : bill.amount;
-    const billAmt = bill.status==='paid' ? 0 : (bill.manualAmount!=null ? bill.manualAmount : autoBill);
-    // 可用額度 = 總額度 - 未出帳 - 帳單未繳
-    const avail = limit - unbilled - billAmt;
     const used = limit - avail;
     const pct = limit>0?Math.min(100,Math.round(used/limit*100)):0;
     const cls = pct>=80?'over':pct>=60?'warn':'ok';
@@ -1856,7 +1873,7 @@ function renderAccounts(){
         <div class="bar-track"><div class="budget-fill ${cls}" style="width:${pct}%"></div></div>
       </div>
       ${p.billingDay?`<div style="font-size:10px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)">
-        <span>本期未出帳（自動）：${fmtN(autoUnbilled)}</span>
+        <span>本期刷卡記錄：${fmtN(autoUnbilled)}　推算未出帳：${fmtN(unbilled)}</span>
       </div>`:''}
     </div>`;
   }).join('');
@@ -2398,9 +2415,12 @@ function openEditCard(id){
   document.getElementById('card-edit-id').value = id;
   document.getElementById('card-name-inp').value = card.label;
   document.getElementById('card-limit-inp').value = settings.ccLimit[id]||0;
-  // 顯示自動計算的未出帳
-  const autoUnbilled = calcCCUnbilled(id);
-  document.getElementById('card-unbilled-inp').value = card.billingDay ? autoUnbilled : (settings.ccUnbilled[id]||0);
+  // 未出帳顯示推算值（總額度-可用-帳單）
+  const avail0 = (settings.ccAvail && settings.ccAvail[id] > 0) ? settings.ccAvail[id] : 0;
+  const bill0 = settings.ccBill[id]||{};
+  const billAmt0 = bill0.status==='paid' ? 0 : (bill0.manualAmount||bill0.amount||0);
+  const inferredUnbilled = avail0 > 0 ? Math.max(0, (settings.ccLimit[id]||0) - avail0 - billAmt0) : (settings.ccUnbilled[id]||0);
+  document.getElementById('card-unbilled-inp').value = inferredUnbilled;
   document.getElementById('card-avail-inp').value = (settings.ccAvail&&settings.ccAvail[id])||0;
   const bill = settings.ccBill[id]||{};
   // 顯示手動覆蓋的帳單金額（如有），否則顯示自動計算
