@@ -1,0 +1,2554 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="H&L錢錢">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f7f3ee">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>H&L錢錢研究所</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=EB+Garamond:ital,wght@0,400;1,400&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#f7f3ee;
+  --surface:#fdfaf6;
+  --surface2:#f0ebe3;
+  --surface3:#e8e0d5;
+  --border:#d8cfc4;
+  --border-light:#ede7de;
+
+  --text:#3d2618;
+  --text2:#6b5a4a;
+  --text3:#a8967e;
+  --text4:#c4b49e;
+
+  --gold:#b8922a;
+  --gold2:#d4aa3c;
+  --gold3:#e8c96a;
+  --gold-bg:#fdf8ed;
+
+  --green:#4a7272;   --green-bg:#edf4f2;
+  --red:#8a3a2a;     --red-bg:#f8eeea;
+  --blue:#3a5a7a;    --blue-bg:#edf2f8;
+  --pink:#8a3a5a;    --pink-bg:#f8edf2;
+  --yellow:#7a6a2a;  --yellow-bg:#f8f4e8;
+  --purple:#5a3a8a;  --purple-bg:#f0edf8;
+  --brown:#6a4a34;   --brown-bg:#f2ede8;
+
+  --radius:4px;
+  --radius-sm:3px;
+  --shadow:0 2px 20px rgba(42,31,20,0.08);
+  --shadow-sm:0 1px 8px rgba(42,31,20,0.05);
+}
+
+body{
+  font-family:'Noto Sans TC',-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;
+  letter-spacing:0.01em;
+  background-image:radial-gradient(ellipse at 50% 0%, rgba(184,146,42,0.06) 0%, transparent 60%);
+}
+
+.app{max-width:480px;margin:0 auto;padding-bottom:90px}
+
+/* ── 雜誌感section ── */
+.section-no{
+  font-family:'Cormorant Garamond',serif;
+  font-size:10px;font-weight:500;
+  color:var(--gold);letter-spacing:0.3em;text-transform:uppercase;
+}
+.section-heading{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;font-weight:600;letter-spacing:0.05em;
+  color:var(--text);
+}
+.section-en{
+  font-size:9px;font-weight:400;
+  color:var(--text3);letter-spacing:0.3em;text-transform:uppercase;
+  margin-left:8px;
+}
+.divider{height:1px;background:var(--border);margin:0 18px}
+.divider-gold{height:1px;background:linear-gradient(90deg,transparent,var(--gold3),transparent);margin:0 18px}
+
+/* ── NAV ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:480px;max-width:100%;
+  background:rgba(253,250,246,0.97);
+  backdrop-filter:blur(16px);
+  border-top:1px solid var(--border);
+  display:flex;z-index:100;
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:10px 0 14px;font-size:9px;color:var(--text3);
+  cursor:pointer;gap:3px;border:none;background:none;
+  font-family:inherit;letter-spacing:0.12em;text-transform:uppercase;
+  transition:color 0.2s;
+}
+.nav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.nav-btn.active{color:var(--gold)}
+
+/* ── TOP BAR ── */
+.top-bar{
+  background:rgba(253,250,246,0.97);
+  backdrop-filter:blur(12px);
+  padding:18px 20px 14px;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:50;
+}
+.top-bar-inner{display:flex;justify-content:space-between;align-items:flex-end}
+.top-bar-left{}
+.top-bar-eyebrow{font-size:9px;color:var(--text3);letter-spacing:0.35em;text-transform:uppercase;margin-bottom:5px}
+.top-bar-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;font-weight:500;letter-spacing:0.06em;color:var(--text);
+  line-height:1;
+}
+.top-bar-title em{font-style:italic;color:var(--gold)}
+.top-bar-date{font-size:10px;color:var(--text3);text-align:right;line-height:1.8;letter-spacing:0.06em}
+
+/* ── MONTH BAR ── */
+.month-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 20px;background:var(--surface2);border-bottom:1px solid var(--border);
+}
+.mnav{display:flex;align-items:center;gap:10px}
+.mnav button{
+  background:none;border:none;cursor:pointer;
+  font-size:13px;color:var(--text3);font-family:inherit;
+  padding:4px 8px;transition:color 0.15s;
+}
+.mnav button:hover{color:var(--gold)}
+.mlabel{
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px;font-weight:500;min-width:80px;
+  text-align:center;color:var(--text);letter-spacing:0.08em;
+}
+
+/* ── SUMMARY ── */
+.summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;padding:0}
+.sum-card{
+  padding:18px 0 16px;text-align:center;
+  border-right:1px solid var(--border-light);
+  background:var(--surface);
+}
+.sum-card:last-child{border-right:none}
+.sum-card .sl{
+  font-size:8px;color:var(--text3);margin-bottom:7px;
+  letter-spacing:0.25em;text-transform:uppercase;
+}
+.sum-card .sa{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;font-weight:400;font-variant-numeric:tabular-nums;
+}
+.sum-card.income .sa{color:var(--green)}
+.sum-card.expense .sa{color:var(--red)}
+.sum-card.balance .sa{color:var(--gold)}
+.sum-card .sa-unit{font-size:13px;margin-right:1px}
+
+/* ── PANELS ── */
+.panel{display:none}.panel.active{display:block}
+
+/* ── QUICK INPUT ── */
+.quick-area{padding:16px 20px 0}
+.quick-box{
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;background:var(--surface);box-shadow:var(--shadow-sm);
+}
+.quick-eyebrow{
+  font-size:8px;color:var(--text3);letter-spacing:0.2em;
+  text-transform:uppercase;margin-bottom:6px;
+}
+.quick-row{display:flex;gap:8px}
+.quick-input{
+  flex:1;border:none;border-bottom:1px solid var(--border);
+  padding:7px 0;font-size:13px;outline:none;font-family:inherit;
+  background:transparent;color:var(--text);transition:border-color 0.2s;
+  border-radius:0;
+}
+.quick-input:focus{border-color:var(--gold)}
+.quick-input::placeholder{color:var(--text4)}
+.quick-btn{
+  background:var(--gold);color:#fdfaf6;border:none;
+  padding:8px 18px;font-size:11px;font-weight:500;cursor:pointer;
+  font-family:inherit;letter-spacing:0.12em;text-transform:uppercase;
+  border-radius:var(--radius);transition:background 0.15s;
+}
+.quick-btn:hover{background:var(--gold2)}
+.quick-preview{margin-top:6px;font-size:10px;color:var(--text3);min-height:14px}
+.quick-preview span{color:var(--gold);font-weight:500}
+
+/* ── STEP FORM ── */
+.step-area{padding:16px 20px}
+.breadcrumb{
+  font-size:11px;color:var(--text3);margin-bottom:14px;
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  border-bottom:1px solid var(--border-light);padding-bottom:12px;
+}
+.breadcrumb .bc-item{color:var(--gold);font-weight:500;letter-spacing:0.04em}
+.breadcrumb .sep{color:var(--text4)}
+.step-title{
+  font-size:9px;color:var(--text3);margin-bottom:12px;
+  letter-spacing:0.25em;text-transform:uppercase;
+}
+.grid-btns{display:grid;gap:7px}
+.grid-btns.col2{grid-template-columns:1fr 1fr}
+.choice-btn{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:11px 8px;text-align:center;
+  cursor:pointer;font-size:13px;color:var(--text);transition:all .15s;
+  font-family:inherit;letter-spacing:0.02em;
+}
+.choice-btn:hover{border-color:var(--gold);color:var(--gold)}
+.choice-btn.selected{background:var(--gold-bg);border-color:var(--gold);color:var(--gold);font-weight:600}
+.choice-btn .ci{font-size:18px;display:block;margin-bottom:4px}
+.type-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.type-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 8px;text-align:center;
+  cursor:pointer;transition:all .15s;font-family:inherit;
+}
+.type-card:hover{border-color:var(--gold)}
+.type-card .ti{font-size:20px;display:block;margin-bottom:5px}
+.type-card .tn{font-size:11px;font-weight:500;color:var(--text2);letter-spacing:0.04em}
+.type-card.t-expense.selected{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.type-card.t-income.selected{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.type-card.t-saving.selected{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.type-card.t-invest.selected{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.type-card.t-subscription.selected{background:var(--purple-bg);border-color:var(--purple);color:var(--purple)}
+.type-card.t-advance.selected{background:var(--yellow-bg);border-color:var(--yellow);color:var(--yellow)}
+.type-card.t-mom.selected{background:var(--pink-bg);border-color:var(--pink);color:var(--pink)}
+.amount-display{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:12px;
+}
+.amount-display .ad-label{font-size:8px;color:var(--text3);margin-bottom:8px;letter-spacing:0.3em;text-transform:uppercase}
+.amount-display .ad-val{
+  font-family:'Cormorant Garamond',serif;
+  font-size:46px;font-weight:300;color:var(--text);letter-spacing:2px;font-variant-numeric:tabular-nums;
+}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
+.num-btn{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;font-size:18px;
+  cursor:pointer;text-align:center;font-family:inherit;
+  color:var(--text);transition:background 0.1s;
+}
+.num-btn:active{background:var(--surface2)}
+.num-btn.del{font-size:13px;color:var(--text2)}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.pay-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:11px 13px;cursor:pointer;transition:all .15s;
+}
+.pay-card:hover{border-color:var(--gold)}
+.pay-card.selected{background:var(--gold-bg);border-color:var(--gold)}
+.pay-card .pn{font-size:13px;font-weight:500;color:var(--text)}
+.pay-card .pb{font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.06em}
+.pay-card.mom-card-opt.selected{background:var(--pink-bg);border-color:var(--pink)}
+.pay-card.mom-card-opt.selected .pn{color:var(--pink)}
+.special-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.stag{
+  display:flex;align-items:center;gap:5px;padding:6px 14px;
+  border:1px solid var(--border);background:var(--surface);font-size:11px;
+  color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;
+  letter-spacing:0.04em;border-radius:var(--radius);
+}
+.stag.on-adv{background:var(--yellow-bg);border-color:var(--yellow);color:var(--yellow)}
+.stag.on-wed{background:var(--pink-bg);border-color:var(--pink);color:var(--pink)}
+.note-input{
+  width:100%;border:none;border-bottom:1px solid var(--border);
+  padding:10px 0;font-size:14px;font-family:inherit;outline:none;
+  resize:none;margin-bottom:14px;background:transparent;color:var(--text);
+  transition:border-color 0.2s;border-radius:0;
+}
+.note-input:focus{border-color:var(--gold)}
+.note-input::placeholder{color:var(--text4)}
+.text-inp{
+  width:100%;border:none;border-bottom:1px solid var(--border);
+  padding:9px 0;font-size:14px;font-family:inherit;outline:none;
+  margin-bottom:10px;background:transparent;color:var(--text);
+  transition:border-color 0.2s;border-radius:0;
+}
+.text-inp:focus{border-color:var(--gold)}
+.text-inp::placeholder{color:var(--text4)}
+.btn-primary{
+  width:100%;background:var(--gold);color:#fdfaf6;border:none;
+  padding:14px;font-size:11px;font-weight:500;cursor:pointer;
+  font-family:inherit;letter-spacing:0.18em;text-transform:uppercase;
+  border-radius:var(--radius);transition:background 0.15s;
+}
+.btn-primary:hover{background:var(--gold2)}
+.step-actions{display:flex;gap:8px;margin-top:14px}
+.step-actions .btn-back{
+  flex:0 0 80px;background:transparent;border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px;font-size:11px;
+  cursor:pointer;font-family:inherit;color:var(--text2);letter-spacing:0.08em;
+}
+.step-actions .btn-next{
+  flex:1;background:var(--gold);color:#fdfaf6;border:none;
+  border-radius:var(--radius);padding:11px;font-size:11px;font-weight:500;
+  cursor:pointer;font-family:inherit;letter-spacing:0.18em;text-transform:uppercase;
+}
+
+/* ── RECORDS ── */
+.records-area{padding:0 20px}
+.day-group{margin-bottom:0}
+.day-label{
+  display:flex;justify-content:space-between;
+  padding:14px 0 8px;
+  border-bottom:1px solid var(--border-light);
+}
+.day-label-left{display:flex;align-items:baseline;gap:8px}
+.day-label-date{
+  font-family:'Cormorant Garamond',serif;
+  font-size:16px;font-weight:400;color:var(--text);
+}
+.day-label-week{font-size:9px;color:var(--text3);letter-spacing:0.2em;text-transform:uppercase}
+.day-label-total{font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
+.record-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 0;border-bottom:1px solid var(--border-light);
+  cursor:pointer;transition:background 0.1s;
+}
+.record-item.is-mom{border-left:2px solid var(--pink);padding-left:12px;margin-left:-12px}
+.rec-icon{
+  width:34px;height:34px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:16px;flex-shrink:0;
+}
+.rec-info{flex:1;min-width:0}
+.rec-main{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.rec-sub{font-size:10px;color:var(--text3);margin-top:3px;display:flex;gap:5px;align-items:center;letter-spacing:0.04em}
+.rec-badge{
+  font-size:9px;padding:1px 6px;letter-spacing:0.08em;text-transform:uppercase;
+  border:1px solid;border-radius:2px;font-weight:500;
+}
+.badge-adv{color:var(--yellow);border-color:var(--yellow);background:var(--yellow-bg)}
+.badge-wed{color:var(--pink);border-color:var(--pink);background:var(--pink-bg)}
+.badge-mom{color:var(--pink);border-color:var(--pink);background:var(--pink-bg)}
+.rec-right{text-align:right;flex-shrink:0}
+.rec-amount{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.rec-pay{font-size:9px;color:var(--text3);margin-top:2px;letter-spacing:0.04em}
+.rec-del{background:none;border:none;cursor:pointer;color:var(--text4);padding:4px;font-size:11px;opacity:0.6}
+
+/* ── CARD SECTIONS ── */
+.card-section{
+  background:var(--surface);border:1px solid var(--border);
+  padding:16px 18px;margin-bottom:10px;
+  border-radius:var(--radius);box-shadow:var(--shadow-sm);
+}
+.card-section-head{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;
+  padding-bottom:10px;border-bottom:1px solid var(--border-light);
+}
+.card-h-left{display:flex;align-items:baseline;gap:8px}
+.card-h-no{
+  font-family:'Cormorant Garamond',serif;
+  font-size:10px;font-weight:500;color:var(--gold);letter-spacing:0.25em;
+}
+.card-h-title{font-size:14px;font-weight:600;color:var(--text);letter-spacing:0.04em}
+.card-h-en{font-size:8px;color:var(--text3);letter-spacing:0.25em;text-transform:uppercase}
+.add-btn{
+  font-size:9px;padding:4px 12px;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--gold);border:1px solid var(--gold);background:transparent;
+  cursor:pointer;font-family:inherit;border-radius:var(--radius);transition:all 0.15s;
+}
+.add-btn:hover{background:var(--gold-bg)}
+/* bar charts */
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bar-label{font-size:11px;color:var(--text);width:64px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:5px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px}
+.bar-pct{font-size:10px;color:var(--text3);width:30px;text-align:right;flex-shrink:0}
+.bar-amt{font-size:11px;font-weight:600;color:var(--text);width:64px;text-align:right;flex-shrink:0}
+.budget-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.budget-label{font-size:11px;font-weight:500;width:60px;flex-shrink:0;color:var(--text2)}
+.budget-track{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.budget-fill{height:100%;border-radius:3px;transition:width .4s}
+.budget-fill.ok{background:#4a7272}
+.budget-fill.warn{background:#c49040}
+.budget-fill.over{background:var(--red)}
+.budget-nums{font-size:10px;color:var(--text3);width:80px;text-align:right;flex-shrink:0}
+
+/* ── ACCOUNTS ── */
+.acct-card{
+  background:var(--surface);border:1px solid var(--border);
+  padding:16px 18px;margin-bottom:8px;border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
+}
+.acct-top{display:flex;justify-content:space-between;align-items:flex-start}
+.acct-name{font-size:13px;font-weight:600;color:var(--text);letter-spacing:0.04em}
+.acct-updated{font-size:9px;color:var(--text4);margin-top:2px;letter-spacing:0.06em}
+.acct-type-badge{
+  font-size:8px;padding:2px 8px;letter-spacing:0.15em;
+  text-transform:uppercase;border:1px solid;border-radius:2px;font-weight:500;
+}
+.badge-cc{color:var(--purple);border-color:var(--purple);background:var(--purple-bg)}
+.badge-bank{color:var(--green);border-color:var(--green);background:var(--green-bg)}
+.acct-balance-row{display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light)}
+.acct-stat .al{font-size:8px;color:var(--text3);margin-bottom:4px;letter-spacing:0.15em;text-transform:uppercase}
+.acct-stat .av{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;font-weight:400;font-variant-numeric:tabular-nums;
+}
+.acct-stat.used .av{color:var(--red)}
+.acct-stat.avail .av{color:var(--green)}
+.acct-stat.bal .av{color:var(--gold)}
+.acct-prog{margin-top:10px}
+.acct-prog .pt{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:4px;letter-spacing:0.06em}
+.acct-prog .bar-track{height:4px}
+
+/* ── MOM CARD ── */
+.mom-summary-card{
+  background:var(--pink-bg);border:1px solid rgba(138,58,90,0.2);
+  padding:16px 18px;margin-bottom:8px;border-radius:var(--radius);
+}
+
+/* ── INSTALLMENT ── */
+.inst-card{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px;margin-bottom:8px;position:relative;
+}
+.inst-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.inst-name{font-size:13px;font-weight:600;color:var(--text)}
+.inst-sub{font-size:10px;color:var(--text3);margin-top:2px;letter-spacing:0.04em}
+.inst-badge{
+  font-size:9px;padding:2px 9px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--gold);border:1px solid var(--gold);background:var(--gold-bg);
+  border-radius:2px;font-weight:500;
+}
+.inst-badge-pink{
+  font-size:9px;padding:2px 9px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--pink);border:1px solid var(--pink);background:var(--pink-bg);
+  border-radius:2px;font-weight:500;
+}
+.bubbles{display:flex;gap:5px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.bubble{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.b-done{background:var(--green);color:#fff}
+.b-cur{background:var(--gold-bg);color:var(--gold);border:1.5px solid var(--gold)}
+.b-fut{background:var(--surface);color:var(--text3);border:1px solid var(--border)}
+.b-conn{flex:1;height:1px;background:var(--border);min-width:4px}
+.inst-footer{display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;padding-top:10px;border-top:1px solid var(--border-light)}
+.inst-monthly{font-size:10px;color:var(--text2);letter-spacing:0.04em}
+.inst-monthly strong{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;font-weight:400;color:var(--text);margin-left:2px;
+}
+.inst-remain{text-align:right}
+.inst-remain-label{font-size:8px;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:2px}
+.inst-remain-val{
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px;font-weight:400;color:var(--text2);
+}
+.inst-del{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:var(--text4);font-size:12px;opacity:0.5}
+
+/* ── ADVANCE ── */
+.adv-item{
+  background:var(--yellow-bg);border:1px solid rgba(122,106,42,0.25);
+  border-radius:var(--radius);padding:14px;margin-bottom:8px;position:relative;
+}
+.adv-head{margin-bottom:8px}
+.adv-person{font-size:13px;font-weight:600;color:var(--text)}
+.adv-detail{font-size:10px;color:var(--text3);margin-top:2px;letter-spacing:0.04em}
+.adv-amounts{display:flex;gap:16px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(122,106,42,0.15)}
+.adv-stat .al{font-size:8px;color:var(--text3);margin-bottom:4px;letter-spacing:0.15em;text-transform:uppercase}
+.adv-stat .av{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400}
+.adv-prog{margin-top:10px}
+.adv-prog .pt{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:4px}
+.adv-del{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:var(--text4);font-size:12px;opacity:0.5}
+.adv-collect{
+  margin-top:10px;background:transparent;border:1px solid var(--yellow);
+  padding:5px 14px;font-size:9px;cursor:pointer;font-family:inherit;
+  color:var(--yellow);letter-spacing:0.15em;text-transform:uppercase;
+  border-radius:var(--radius);
+}
+
+/* ── FIXED ITEMS ── */
+.fixed-area{padding:0 20px}
+.fixed-item{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:7px;box-shadow:var(--shadow-sm);
+}
+.fixed-item.inactive{opacity:0.45}
+.fixed-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--surface2);border:1px solid var(--border)}
+.fixed-info{flex:1;min-width:0}
+.fixed-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fixed-sub{font-size:9px;color:var(--text3);margin-top:2px;letter-spacing:0.08em;text-transform:uppercase}
+.fixed-amount{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:var(--text)}
+.fixed-cycle{font-size:9px;color:var(--text3);text-align:right;margin-top:2px;letter-spacing:0.06em}
+.fixed-del{background:none;border:1px solid var(--border);cursor:pointer;color:var(--text3);font-size:10px;padding:3px 8px;border-radius:var(--radius);margin-left:6px;flex-shrink:0;letter-spacing:0.08em}
+.fixed-toggle{
+  width:34px;height:18px;border-radius:9px;border:none;cursor:pointer;
+  background:var(--border);position:relative;transition:background 0.2s;flex-shrink:0;
+}
+.fixed-toggle.on{background:var(--gold)}
+.fixed-toggle::after{
+  content:'';position:absolute;top:2px;left:2px;
+  width:14px;height:14px;border-radius:50%;background:#fff;
+  transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);
+}
+.fixed-toggle.on::after{transform:translateX(16px)}
+.fixed-summary{
+  background:var(--gold-bg);border:1px solid rgba(184,146,42,0.25);
+  border-radius:var(--radius);padding:16px 18px;margin-bottom:12px;
+}
+.fixed-summary-label{font-size:9px;color:var(--text3);letter-spacing:0.25em;text-transform:uppercase;margin-bottom:6px}
+.fixed-summary-amount{
+  font-family:'Cormorant Garamond',serif;
+  font-size:32px;font-weight:300;color:var(--gold);font-variant-numeric:tabular-nums;
+}
+
+/* ── SETTINGS ── */
+.settings-area{padding:0 20px}
+.setting-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.setting-group h3{font-size:8px;font-weight:600;color:var(--gold);padding:10px 16px;border-bottom:1px solid var(--border);letter-spacing:0.35em;text-transform:uppercase;background:var(--gold-bg)}
+.setting-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border-light)}
+.setting-row:last-child{border-bottom:none}
+.setting-row label{font-size:12px;flex:1;color:var(--text2)}
+.setting-row input{width:110px;border:none;border-bottom:1px solid var(--border);padding:5px 0;font-size:13px;text-align:right;font-family:inherit;outline:none;background:transparent;color:var(--text);border-radius:0}
+.setting-row input:focus{border-color:var(--gold)}
+.setting-save{
+  background:var(--gold);color:#fdfaf6;border:none;
+  padding:11px 24px;font-size:10px;font-weight:500;cursor:pointer;
+  font-family:inherit;margin:0 0 16px;
+  letter-spacing:0.18em;text-transform:uppercase;border-radius:var(--radius);
+}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(30,20,10,0.5);backdrop-filter:blur(6px);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal-box{
+  background:var(--surface);border-radius:0;
+  padding:24px 22px 36px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;
+  border-top:2px solid var(--gold);
+}
+.modal-box h3{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;font-weight:500;margin-bottom:18px;color:var(--text);letter-spacing:0.04em;
+}
+.modal-label{font-size:9px;color:var(--text3);margin-bottom:6px;margin-top:14px;letter-spacing:0.25em;text-transform:uppercase}
+.modal-label:first-of-type{margin-top:0}
+.modal-actions{display:flex;gap:8px;margin-top:20px}
+.modal-actions .btn-cancel{flex:1;background:transparent;border:1px solid var(--border);padding:11px;font-size:10px;cursor:pointer;font-family:inherit;color:var(--text2);letter-spacing:0.12em;text-transform:uppercase}
+.modal-actions .btn-confirm{flex:2;background:var(--gold);color:#fdfaf6;border:none;padding:11px;font-size:10px;font-weight:500;cursor:pointer;font-family:inherit;letter-spacing:0.18em;text-transform:uppercase}
+.modal-actions .btn-yellow{flex:2;background:var(--yellow);color:#fff;border:none;padding:11px;font-size:10px;font-weight:500;cursor:pointer;font-family:inherit;letter-spacing:0.18em;text-transform:uppercase}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:#3d2618;color:#fdfaf6;padding:9px 22px;font-size:11px;
+  opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap;
+  letter-spacing:0.08em;box-shadow:0 4px 20px rgba(42,31,20,0.25);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.section-label{
+  font-size:8px;font-weight:600;color:var(--text3);letter-spacing:0.35em;
+  text-transform:uppercase;margin:16px 0 8px;
+}
+.analysis-area,.accounts-area{padding:0 20px}
+</style>
+
+<!-- SheetJS for Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
+
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <div class="top-bar-left">
+        <div class="top-bar-eyebrow">Personal Finance</div>
+        <div class="top-bar-title">H&amp;L <em>&</em> 錢錢研究所</div>
+      </div>
+      <div class="top-bar-date">
+        <div id="today-str"></div>
+        <div style="color:var(--gold);letter-spacing:0.12em">雪人胖胖版 ✦</div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MONTH BAR -->
+  <div class="month-bar">
+    <div class="mnav">
+      <button onclick="changeMonth(-1)">◂</button>
+      <div class="mlabel" id="month-label"></div>
+      <button onclick="changeMonth(1)">▸</button>
+    </div>
+    <select id="year-sel" onchange="onYearChange()" style="border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:13px;font-family:inherit;outline:none;background:var(--surface2);color:var(--text)"></select>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-grid">
+    <div class="sum-card income"><div class="sl">收入</div><div class="sa" id="sum-income">$0</div></div>
+    <div class="sum-card expense"><div class="sl">支出</div><div class="sa" id="sum-expense">$0</div></div>
+    <div class="sum-card balance"><div class="sl">結餘</div><div class="sa" id="sum-balance">$0</div></div>
+  </div>
+
+  <!-- ADD PANEL -->
+  <div class="panel active" id="panel-add">
+    <div class="quick-area">
+      <div class="quick-box">
+        <div class="quick-label">⚡ 快速輸入</div>
+        <div class="quick-row">
+          <input class="quick-input" id="quick-inp" placeholder="輸入文字..." oninput="onQuickInput()" onkeydown="if(event.key==='Enter')submitQuick()">
+          <button class="quick-btn" onclick="submitQuick()">送出</button>
+        </div>
+        <div class="quick-preview" id="quick-preview">辨識結果會顯示在這裡</div>
+      </div>
+    </div>
+    <div class="step-area">
+      <div class="breadcrumb" id="breadcrumb"></div>
+      <div id="step-content"></div>
+    </div>
+  </div>
+
+  <!-- LIST PANEL -->
+  <div class="panel" id="panel-list">
+    <div class="records-area" id="records-area"></div>
+  </div>
+
+  <!-- FIXED PANEL (固定支出) -->
+  <div class="panel" id="panel-fixed">
+    <div class="fixed-area" id="fixed-area"></div>
+  </div>
+
+  <!-- ANALYSIS PANEL -->
+  <div class="panel" id="panel-analysis">
+    <div class="analysis-area" id="analysis-area"></div>
+  </div>
+
+  <!-- ACCOUNTS PANEL -->
+  <div class="panel" id="panel-accounts">
+    <div class="accounts-area" id="accounts-area"></div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div class="panel" id="panel-settings">
+    <div class="settings-area" id="settings-area"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV (6 items) -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-add" onclick="switchPanel('add')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>新增
+  </button>
+  <button class="nav-btn" id="nav-list" onclick="switchPanel('list')">
+    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>明細
+  </button>
+  <button class="nav-btn" id="nav-fixed" onclick="switchPanel('fixed')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>固定
+  </button>
+  <button class="nav-btn" id="nav-analysis" onclick="switchPanel('analysis')">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>分析
+  </button>
+  <button class="nav-btn" id="nav-accounts" onclick="switchPanel('accounts')">
+    <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>帳戶
+  </button>
+  <button class="nav-btn" id="nav-settings" onclick="switchPanel('settings')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定
+  </button>
+</div>
+
+<!-- CC繳款 MODAL -->
+<div class="modal-overlay hidden" id="repay-modal">
+  <div class="modal-box">
+    <h3>💳 信用卡繳款</h3>
+    <div class="modal-label">選擇信用卡</div>
+    <div id="repay-cc-list" style="display:flex;flex-direction:column;gap:7px"></div>
+    <div class="modal-label">從哪個帳戶扣款</div>
+    <div id="repay-bank-list" style="display:grid;grid-template-columns:1fr 1fr;gap:7px"></div>
+    <div class="modal-label">繳款金額</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="number" id="repay-amount" placeholder="輸入金額" class="text-inp" style="margin-bottom:0;flex:1">
+      <button onclick="fillFullRepay()" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;color:var(--text2)">全額</button>
+    </div>
+    <div id="repay-hint" style="font-size:11px;color:var(--text3);margin-top:5px"></div>
+    <div class="modal-label">日期</div>
+    <input type="date" id="repay-date" class="text-inp" style="margin-bottom:0">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('repay-modal')">取消</button>
+      <button class="btn-confirm" onclick="submitRepay()">✅ 確認繳款</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增分期 MODAL -->
+<div class="modal-overlay hidden" id="inst-modal">
+  <div class="modal-box">
+    <h3>➕ 新增分期</h3>
+    <div class="modal-label">項目名稱</div>
+    <input type="text" class="text-inp" id="inst-name" placeholder="例：YSL包包">
+    <div class="modal-label">說明（銀行/卡片）</div>
+    <input type="text" class="text-inp" id="inst-bank" placeholder="例：中信台北101卡">
+    <div class="modal-label">每月金額</div>
+    <input type="number" class="text-inp" id="inst-monthly" placeholder="0">
+    <div class="modal-label">總期數</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:8px">
+      <button class="choice-btn" onclick="selInstTotal(3,this)">3期</button>
+      <button class="choice-btn" onclick="selInstTotal(6,this)">6期</button>
+      <button class="choice-btn" onclick="selInstTotal(12,this)">12期</button>
+      <button class="choice-btn" onclick="selInstTotal(0,this)">自訂</button>
+    </div>
+    <input type="number" class="text-inp" id="inst-total" placeholder="期數">
+    <div class="modal-label">開始年月</div>
+    <div style="display:flex;gap:8px">
+      <input type="number" class="text-inp" id="inst-year" placeholder="年份" style="flex:1;margin-bottom:0">
+      <select id="inst-month-sel" style="flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-size:14px;font-family:inherit;outline:none;background:var(--surface2);color:var(--text)">
+        <option value="0">1月</option><option value="1">2月</option><option value="2">3月</option>
+        <option value="3">4月</option><option value="4">5月</option><option value="5">6月</option>
+        <option value="6">7月</option><option value="7">8月</option><option value="8">9月</option>
+        <option value="9">10月</option><option value="10">11月</option><option value="11">12月</option>
+      </select>
+    </div>
+    <div class="modal-label">類型</div>
+    <div style="display:flex;gap:7px">
+      <button class="choice-btn selected" id="inst-type-normal" onclick="selInstType('normal',this)">💳 信用卡分期</button>
+      <button class="choice-btn" id="inst-type-transfer" onclick="selInstType('transfer',this)">🔄 每月轉帳</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('inst-modal')">取消</button>
+      <button class="btn-confirm" onclick="submitInst()">✅ 新增</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增代墊款 MODAL -->
+<div class="modal-overlay hidden" id="adv-modal">
+  <div class="modal-box">
+    <h3>➕ 新增代墊款</h3>
+    <div class="modal-label">對象</div>
+    <input type="text" class="text-inp" id="adv-person" placeholder="例：姐姐、曾哥">
+    <div class="modal-label">項目說明</div>
+    <input type="text" class="text-inp" id="adv-item" placeholder="例：新加坡商保養品">
+    <div class="modal-label">代墊金額</div>
+    <input type="number" class="text-inp" id="adv-amount" placeholder="0">
+    <div class="modal-label">日期</div>
+    <input type="date" class="text-inp" id="adv-date">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('adv-modal')">取消</button>
+      <button class="btn-confirm" onclick="submitAdv()">✅ 新增</button>
+    </div>
+  </div>
+</div>
+
+<!-- 收款 MODAL -->
+<div class="modal-overlay hidden" id="collect-modal">
+  <div class="modal-box">
+    <h3>💛 代墊款收款</h3>
+    <div id="collect-info" style="font-size:13px;color:var(--text2);margin-bottom:12px"></div>
+    <div class="modal-label">收回金額</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="number" class="text-inp" id="collect-amount" placeholder="0" style="margin-bottom:0;flex:1">
+      <button onclick="fillFullCollect()" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;color:var(--text2)">全額</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('collect-modal')">取消</button>
+      <button class="btn-yellow" onclick="submitCollect()">✅ 確認收款</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增固定支出 MODAL -->
+<div class="modal-overlay hidden" id="fixed-modal">
+  <div class="modal-box">
+    <h3>➕ 新增固定支出</h3>
+    <div class="modal-label">名稱</div>
+    <input type="text" class="text-inp" id="fx-name" placeholder="例：Netflix、電話費">
+    <div class="modal-label">圖示（emoji）</div>
+    <input type="text" class="text-inp" id="fx-icon" placeholder="📺" maxlength="2">
+    <div class="modal-label">金額（每期）</div>
+    <input type="number" class="text-inp" id="fx-amount" placeholder="0">
+    <div class="modal-label">週期</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:7px;margin-bottom:8px">
+      <button class="choice-btn selected" id="fx-c-m" onclick="selFxCycle('monthly',this)">每月</button>
+      <button class="choice-btn" id="fx-c-q" onclick="selFxCycle('quarterly',this)">每季</button>
+      <button class="choice-btn" id="fx-c-y" onclick="selFxCycle('yearly',this)">每年</button>
+      <button class="choice-btn" id="fx-c-o" onclick="selFxCycle('other',this)">其他</button>
+    </div>
+    <div class="modal-label">備註（選填）</div>
+    <input type="text" class="text-inp" id="fx-note" placeholder="例：愛奇藝年費">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('fixed-modal')">取消</button>
+      <button class="btn-confirm" onclick="submitFixed()">✅ 新增</button>
+    </div>
+  </div>
+</div>
+
+<!-- 編輯記錄 MODAL -->
+<div class="modal-overlay hidden" id="edit-modal">
+  <div class="modal-box">
+    <h3>編輯記錄</h3>
+    <input type="hidden" id="edit-id">
+    <div class="modal-label">項目名稱</div>
+    <input type="text" class="text-inp" id="edit-item" placeholder="項目名稱">
+    <div class="modal-label">分類</div>
+    <select class="text-inp" id="edit-cat" style="cursor:pointer">
+      <option value="food">🍜 餐飲</option>
+      <option value="transport">🚗 交通</option>
+      <option value="shopping">🛍️ 購物</option>
+      <option value="beauty">💇 美容</option>
+      <option value="entertainment">🎬 娛樂</option>
+      <option value="health">💊 醫療</option>
+      <option value="home">🏠 居家</option>
+      <option value="fuel">⛽ 加油</option>
+      <option value="telecom">📶 電信</option>
+      <option value="special">✨ 特別支出</option>
+      <option value="studio">🖥️ 工作室設備</option>
+      <option value="studio_other">📐 工作室雜支</option>
+      <option value="other">📦 其他</option>
+      <option value="salary">💼 薪資</option>
+      <option value="work_studio">🖥️ 工作室收入</option>
+      <option value="invest_in">📈 投資收益</option>
+      <option value="gift">🧧 紅包</option>
+      <option value="transfer_in">🔄 轉入</option>
+      <option value="other_in">💰 其他收入</option>
+      <option value="video">📺 影音訂閱</option>
+      <option value="music">🎵 音樂訂閱</option>
+      <option value="ai_tool">🤖 AI工具</option>
+      <option value="cloud">☁️ 雲端</option>
+      <option value="sw">💻 軟體</option>
+      <option value="adv">💛 代墊款</option>
+      <option value="mom_food">🍜 媽媽卡-餐飲</option>
+      <option value="mom_fuel">⛽ 媽媽卡-加油</option>
+      <option value="mom_other">📦 媽媽卡-其他</option>
+    </select>
+    <div class="modal-label">付款方式</div>
+    <select class="text-inp" id="edit-payment" style="cursor:pointer">
+      <option value="kaiji">凱基銀行</option>
+      <option value="ctbc_b">中信活期</option>
+      <option value="cathay_b">國泰CUBE存款</option>
+      <option value="linepay_m">LINE Pay</option>
+      <option value="cash">現金</option>
+      <option value="mom_card">媽媽卡</option>
+      <option value="ctbc_cc">中信信用卡</option>
+      <option value="taishin">台新 Richart</option>
+      <option value="cathay_cc">國泰CUBE卡</option>
+      <option value="other_pay">其他</option>
+    </select>
+    <div class="modal-label">備註</div>
+    <input type="text" class="text-inp" id="edit-note" placeholder="備註">
+    <div class="modal-label">金額</div>
+    <input type="number" class="text-inp" id="edit-amount" placeholder="0">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('edit-modal')">取消</button>
+      <button class="btn-confirm" onclick="saveEdit()">✅ 儲存</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 編輯記錄 MODAL -->
+<div class="modal-overlay hidden" id="edit-modal">
+  <div class="modal-box">
+    <h3>編輯記錄</h3>
+    <input type="hidden" id="edit-id">
+
+    <div class="modal-label">項目名稱</div>
+    <input type="text" class="text-inp" id="edit-item" placeholder="項目名稱">
+
+    <div class="modal-label">金額</div>
+    <input type="number" class="text-inp" id="edit-amount" placeholder="0">
+
+    <div class="modal-label">類型</div>
+    <select class="text-inp" id="edit-type" style="margin-bottom:0;cursor:pointer">
+      <option value="expense">💸 支出</option>
+      <option value="income">💰 收入</option>
+      <option value="subscription">📋 訂閱</option>
+      <option value="advance">💛 代墊</option>
+      <option value="mom">💗 媽媽卡</option>
+      <option value="saving">🏦 儲蓄</option>
+      <option value="invest">📈 投資</option>
+    </select>
+
+    <div class="modal-label">分類</div>
+    <select class="text-inp" id="edit-cat" style="margin-bottom:0;cursor:pointer">
+      <option value="food">🍜 餐飲</option>
+      <option value="transport">🚗 交通</option>
+      <option value="shopping">🛍️ 購物</option>
+      <option value="beauty">💇 美容</option>
+      <option value="entertainment">🎬 娛樂</option>
+      <option value="health">💊 醫療</option>
+      <option value="home">🏠 居家</option>
+      <option value="fuel">⛽ 加油</option>
+      <option value="telecom">📶 電信</option>
+      <option value="special">✨ 特別支出</option>
+      <option value="studio">🖥️ 工作室設備</option>
+      <option value="studio_other">📐 工作室雜支</option>
+      <option value="other">📦 其他</option>
+      <option value="work_salary">💼 薪資</option>
+      <option value="work_studio">🖥️ 工作室收入</option>
+      <option value="invest_in">📈 投資收益</option>
+      <option value="gift">🧧 紅包</option>
+      <option value="transfer_in">🔄 轉入</option>
+      <option value="other_in">💰 其他收入</option>
+      <option value="video">📺 影音</option>
+      <option value="music">🎵 音樂</option>
+      <option value="ai_tool">🤖 AI工具</option>
+      <option value="cloud">☁️ 雲端</option>
+      <option value="sw">💻 軟體</option>
+      <option value="adv">💛 代墊款</option>
+      <option value="mom_food">🍜 媽媽卡-餐飲</option>
+      <option value="mom_fuel">⛽ 媽媽卡-加油</option>
+      <option value="mom_shop">🛍️ 媽媽卡-購物</option>
+      <option value="mom_other">📦 媽媽卡-其他</option>
+    </select>
+
+    <div class="modal-label">付款方式</div>
+    <select class="text-inp" id="edit-payment" style="margin-bottom:0;cursor:pointer">
+      <option value="kaiji">凱基銀行</option>
+      <option value="ctbc_b">中信活期</option>
+      <option value="cathay_b">國泰CUBE存款</option>
+      <option value="linepay_m">LINE Pay</option>
+      <option value="cash">現金</option>
+      <option value="mom_card">媽媽卡</option>
+      <option value="ctbc_cc">中信信用卡</option>
+      <option value="taishin">台新 Richart</option>
+      <option value="cathay_cc">國泰CUBE卡</option>
+      <option value="other_pay">其他</option>
+    </select>
+
+    <div class="modal-label">日期</div>
+    <input type="date" class="text-inp" id="edit-date">
+
+    <div class="modal-label">備註</div>
+    <input type="text" class="text-inp" id="edit-note" placeholder="備註（選填）">
+
+    <div class="modal-label">特殊標記</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+        <input type="checkbox" id="edit-tag-adv"> 💛 代墊款
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+        <input type="checkbox" id="edit-tag-wed"> 💍 婚禮
+      </label>
+    </div>
+    <div id="edit-adv-person-wrap" style="display:none;margin-top:4px">
+      <input type="text" class="text-inp" id="edit-adv-person" placeholder="代墊對象">
+    </div>
+
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-light)">
+      <button onclick="deleteFromEdit()" style="width:100%;background:none;border:1px solid var(--red);color:var(--red);padding:9px;font-size:10px;cursor:pointer;font-family:inherit;letter-spacing:0.15em;text-transform:uppercase;border-radius:var(--radius)">刪除此記錄</button>
+    </div>
+    <div class="modal-actions" style="margin-top:10px">
+      <button class="btn-cancel" onclick="closeModal('edit-modal')">取消</button>
+      <button class="btn-confirm" onclick="saveEdit()">✓ 儲存</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 新增/編輯帳戶 MODAL -->
+<div class="modal-overlay hidden" id="acct-modal">
+  <div class="modal-box">
+    <h3 id="acct-modal-title">新增帳戶</h3>
+    <input type="hidden" id="acct-edit-id">
+    <div class="modal-label">帳戶名稱</div>
+    <input type="text" class="text-inp" id="acct-name-inp" placeholder="例：凱基銀行、現金">
+    <div class="modal-label">目前餘額</div>
+    <input type="number" class="text-inp" id="acct-bal-inp" placeholder="0">
+    <div class="modal-label">更新日期標記（選填）</div>
+    <input type="text" class="text-inp" id="acct-updated-inp" placeholder="例：06/22">
+    <div id="acct-delete-wrap" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light)">
+      <button onclick="deleteAccount()" style="width:100%;background:none;border:1px solid var(--red);color:var(--red);padding:9px;font-size:10px;cursor:pointer;font-family:inherit;letter-spacing:0.15em;text-transform:uppercase;border-radius:var(--radius)">刪除此帳戶</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('acct-modal')">取消</button>
+      <button class="btn-confirm" onclick="saveAccount()">✓ 儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增/編輯信用卡 MODAL -->
+<div class="modal-overlay hidden" id="card-modal">
+  <div class="modal-box">
+    <h3 id="card-modal-title">新增信用卡</h3>
+    <input type="hidden" id="card-edit-id">
+    <div class="modal-label">卡片名稱</div>
+    <input type="text" class="text-inp" id="card-name-inp" placeholder="例：中信信用卡、台新 Richart">
+    <div class="modal-label">信用額度</div>
+    <input type="number" class="text-inp" id="card-limit-inp" placeholder="0">
+    <div class="modal-label">未出帳金額</div>
+    <input type="number" class="text-inp" id="card-unbilled-inp" placeholder="0">
+    <div class="modal-label">實際可用額度</div>
+    <input type="number" class="text-inp" id="card-avail-inp" placeholder="0">
+    <div class="modal-label">帳單金額 <span id="card-bill-hint" style="color:var(--text3);font-size:10px;font-weight:normal"></span></div>
+    <input type="number" class="text-inp" id="card-bill-inp" placeholder="自動計算">
+    <div class="modal-label">帳單狀態</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="choice-btn selected" id="card-status-paid" onclick="selCardStatus('paid',this)">✅ 已繳清</button>
+      <button class="choice-btn" id="card-status-due" onclick="selCardStatus('due',this)">⚠️ 待繳</button>
+    </div>
+    <div class="modal-label">結帳日（幾號）</div>
+    <input type="number" class="text-inp" id="card-billing-day-inp" placeholder="例：25" min="1" max="31">
+    <div class="modal-label">繳款截止日（幾號）</div>
+    <input type="number" class="text-inp" id="card-due-day-inp" placeholder="例：13" min="1" max="31">
+    <div class="modal-label">繳款截止（月/日，待繳時顯示）</div>
+    <input type="text" class="text-inp" id="card-due-date-inp" placeholder="例：07/02">
+    <div id="card-delete-wrap" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light)">
+      <button onclick="deleteCard()" style="width:100%;background:none;border:1px solid var(--red);color:var(--red);padding:9px;font-size:10px;cursor:pointer;font-family:inherit;letter-spacing:0.15em;text-transform:uppercase;border-radius:var(--radius)">刪除此信用卡</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('card-modal')">取消</button>
+      <button class="btn-confirm" onclick="saveCard()">✓ 儲存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ====== 靜態設定 ======
+const TYPES=[
+  {id:'expense',   label:'支出',   icon:'💸', cls:'t-expense'},
+  {id:'income',    label:'收入',   icon:'💰', cls:'t-income'},
+  {id:'saving',    label:'儲蓄',   icon:'🏦', cls:'t-saving'},
+  {id:'invest',    label:'投資',   icon:'📈', cls:'t-invest'},
+  {id:'subscription',label:'訂閱', icon:'📋', cls:'t-subscription'},
+  {id:'advance',   label:'代墊',   icon:'💛', cls:'t-advance'},
+  {id:'mom',       label:'媽媽卡', icon:'💗', cls:'t-mom'},
+];
+
+// 所有 items 結尾都有「其他（手動輸入）」
+const CATS={
+  expense:[
+    {id:'food',     label:'餐飲',   icon:'🍜', items:['早餐','午餐','晚餐','飲料','下午茶','聚餐','宵夜','其他（手動輸入）'],group:'personal'},
+    {id:'transport',label:'交通',   icon:'🚗', items:['油費','高鐵','計程車','Uber','停車費','eTag加值','eTag臨停','機票','其他（手動輸入）'],group:'personal'},
+    {id:'shopping', label:'購物',   icon:'🛍️', items:['衣服','鞋子','包包','生活用品','保養品','3C','其他（手動輸入）'],group:'personal'},
+    {id:'beauty',   label:'美容',   icon:'💇', items:['美髮','保養品','彩妝','SPA','其他（手動輸入）'],group:'personal'},
+    {id:'entertainment',label:'娛樂',icon:'🎬',items:['電影','遊戲','旅遊','運動','住宿','其他（手動輸入）'],group:'personal'},
+    {id:'health',   label:'醫療',   icon:'💊', items:['門診','藥品','健身','其他（手動輸入）'],group:'personal'},
+    {id:'home',     label:'居家',   icon:'🏠', items:['房租','水費','電費','打掃費','其他（手動輸入）'],group:'personal'},
+    {id:'fuel',     label:'加油',   icon:'⛽', items:['加油','其他（手動輸入）'],group:'personal'},
+    {id:'telecom',  label:'電信',   icon:'📶', items:['電話費','其他（手動輸入）'],group:'personal'},
+    {id:'special',  label:'特別支出',icon:'✨', items:['婚禮','蜜月','旅遊','禮物','紀念日','其他（手動輸入）'],group:'personal'},
+    {id:'studio',   label:'工作室設備',icon:'🖥️', items:['設備','軟體','Adobe','其他（手動輸入）'],group:'studio'},
+    {id:'studio_other',label:'工作室雜支',icon:'📐', items:['材料','運費','其他（手動輸入）'],group:'studio'},
+    {id:'other',    label:'其他',   icon:'📦', items:['考試費','紅包','其他（手動輸入）'],group:'personal'},
+  ],
+  income:[
+    {id:'work_salary', label:'薪資',     icon:'💼', items:['月薪','獎金','其他（手動輸入）'],group:'personal'},
+    {id:'work_studio', label:'工作室收入',icon:'🖥️', items:['接案','設計費','其他（手動輸入）'],group:'studio'},
+    {id:'invest_in',   label:'投資收益', icon:'📈', items:['股息','配息','其他（手動輸入）'],group:'personal'},
+    {id:'gift',        label:'紅包',     icon:'🧧', items:['生日紅包','婚禮','其他（手動輸入）'],group:'personal'},
+    {id:'transfer_in', label:'轉入',     icon:'🔄', items:['跨行轉入','其他（手動輸入）'],group:'personal'},
+    {id:'other_in',    label:'其他收入', icon:'💰', items:['其他（手動輸入）'],group:'personal'},
+  ],
+  saving:[{id:'save',label:'存款',icon:'🏦',items:['定存','備用金','其他（手動輸入）']}],
+  invest:[
+    {id:'stock',  label:'股票',icon:'📊',items:['台股','美股','ETF','其他（手動輸入）']},
+    {id:'crypto', label:'加密',icon:'₿', items:['比特幣','以太幣','其他（手動輸入）']},
+  ],
+  subscription:[
+    {id:'video',  label:'影音',  icon:'📺',items:['Netflix','Disney+','YouTube','愛奇藝','Apple TV+','其他（手動輸入）']},
+    {id:'music',  label:'音樂',  icon:'🎵',items:['Spotify','Apple Music','其他（手動輸入）']},
+    {id:'ai_tool',label:'AI工具',icon:'🤖',items:['Claude','ChatGPT','其他（手動輸入）']},
+    {id:'cloud',  label:'雲端',  icon:'☁️',items:['iCloud','Google One','其他（手動輸入）']},
+    {id:'sw',     label:'軟體',  icon:'💻',items:['Adobe Premiere','其他（手動輸入）']},
+    {id:'other_sub',label:'其他',icon:'📌',items:['其他（手動輸入）']},
+  ],
+  advance:[{id:'adv',label:'代墊款',icon:'💛',items:['其他（手動輸入）']}],
+  mom:[
+    {id:'mom_food',  label:'餐飲',icon:'🍜',items:['早餐','午餐','晚餐','飲料','其他（手動輸入）']},
+    {id:'mom_fuel',  label:'加油',icon:'⛽',items:['加油','其他（手動輸入）']},
+    {id:'mom_shop',  label:'購物',icon:'🛍️',items:['超市','其他（手動輸入）']},
+    {id:'mom_other', label:'其他',icon:'📦',items:['其他（手動輸入）']},
+  ],
+};
+
+const PAYMENTS=[
+  {id:'kaiji',    label:'凱基銀行',   type:'bank',updated:'06/22'},
+  {id:'ctbc_b',   label:'中信活期',   type:'bank',updated:'06/22'},
+  {id:'cathay_b', label:'國泰CUBE存款',type:'bank',updated:'06/22'},
+  {id:'linepay_m',label:'LINE Pay',   type:'bank',updated:'06/22'},
+  {id:'cash',     label:'現金',       type:'bank',updated:'06/22'},
+  {id:'mom_card', label:'媽媽卡',     type:'mom'},
+  {id:'ctbc_cc',  label:'中信信用卡', type:'cc'},
+  {id:'taishin',  label:'台新 Richart',type:'cc'},
+  {id:'cathay_cc',label:'國泰CUBE卡', type:'cc'},
+  {id:'other_pay',label:'其他',       type:'other'},
+];
+
+const QUICK_MAP=[
+  {kw:['netflix'],type:'subscription',cat:'video',item:'Netflix'},
+  {kw:['愛奇藝'],type:'subscription',cat:'video',item:'愛奇藝'},
+  {kw:['spotify'],type:'subscription',cat:'music',item:'Spotify'},
+  {kw:['adobe'],  type:'subscription',cat:'sw',   item:'Adobe Premiere'},
+  {kw:['icloud'], type:'subscription',cat:'cloud',item:'iCloud'},
+  {kw:['薪水','薪資','薪'],type:'income',cat:'salary',item:'月薪'},
+  {kw:['早餐'],type:'expense',cat:'food',item:'早餐'},
+  {kw:['午餐'],type:'expense',cat:'food',item:'午餐'},
+  {kw:['晚餐'],type:'expense',cat:'food',item:'晚餐'},
+  {kw:['飲料','珍奶','咖啡'],type:'expense',cat:'food',item:'飲料'},
+  {kw:['加油'],type:'expense',cat:'fuel',item:'加油'},
+  {kw:['停車','etag'],type:'expense',cat:'transport',item:'停車費'},
+  {kw:['高鐵'],type:'expense',cat:'transport',item:'高鐵'},
+  {kw:['uber'],type:'expense',cat:'transport',item:'Uber'},
+  {kw:['美髮','剪髮'],type:'expense',cat:'beauty',item:'美髮'},
+  {kw:['房租'],type:'expense',cat:'home',item:'房租'},
+  {kw:['電信','電話費'],type:'expense',cat:'telecom',item:'電話費'},
+];
+
+// ====== 動態資料 ======
+let records=[], repayments=[], installments=[], advances=[], fixedItems=[];
+let settings={
+  budgets:{food:8000,transport:8000,shopping:6000,beauty:3000,entertainment:2000,health:2000,home:5000,fuel:5000,telecom:1200,special:0,studio:0,other:2000},
+  bankBalance:{kaiji:36971,ctbc_b:726,cathay_b:1829,linepay_m:2524,cash:1446},
+  ccLimit:{ctbc_cc:200000,taishin:150000,cathay_cc:60000},
+  ccUnbilled:{ctbc_cc:49272,taishin:74111,cathay_cc:19218},
+  ccBill:{
+    ctbc_cc:{amount:30189,status:'paid',billingDay:25,dueDay:13,label:'每月25日結帳 · 13日扣繳',due:''},
+    taishin:{amount:14338,status:'due',label:'每月17日結帳 · 07/02繳款',due:'07/02'},
+    cathay_cc:{amount:5840,status:'paid',billingDay:24,dueDay:9,label:'每月24日結帳 · 9日扣繳',due:''},
+  },
+  ccAvail:{ctbc_cc:36349,taishin:75889,cathay_cc:40732},
+  // 動態帳戶清單
+  accounts:[
+    {id:'kaiji',    label:'凱基銀行',    updated:'06/22'},
+    {id:'ctbc_b',   label:'中信活期',    updated:'06/22'},
+    {id:'cathay_b', label:'國泰CUBE存款',updated:'06/22'},
+    {id:'linepay_m',label:'LINE Pay',    updated:'06/22'},
+    {id:'cash',     label:'現金',        updated:'06/22'},
+  ],
+  // 動態信用卡清單
+  cards:[
+    {id:'ctbc_cc',  label:'中信信用卡',  billingDay:25,dueDay:13},
+    {id:'taishin',  label:'台新 Richart',billingDay:17,dueDay:2,fixedDue:'07/02'},
+    {id:'cathay_cc',label:'國泰CUBE卡',  billingDay:24,dueDay:9},
+  ],
+};
+
+let viewYear=2026, viewMonth=5;
+let step=0;
+let draft={type:null,cat:null,item:null,amount:'',payment:null,note:'',tags:{adv:false,wed:false},advPerson:''};
+let instType='normal', fxCycle='monthly';
+let collectTargetId=null;
+let repayDraft={ccId:null,bankId:null};
+
+// ====== DEFAULTS ======
+const defaultInst=[
+  {id:1,name:'👜 YSL 包包',bank:'中信 台北101卡',monthly:7808,total:6,startYear:2026,startMonth:3,type:'normal'},
+  {id:2,name:'💍 鑽戒',   bank:'中信 中華航空聯名卡',monthly:6900,total:6,startYear:2026,startMonth:3,type:'normal'},
+  {id:3,name:'💛 卡地亞', bank:'每月轉帳給男友',monthly:5350,total:6,startYear:2026,startMonth:3,type:'transfer'},
+  {id:4,name:'✈️ 華航巴黎機票',bank:'台新 Richart 5202',monthly:2090,total:30,startYear:2026,startMonth:5,type:'normal'},
+];
+const defaultAdv=[
+  {id:1,person:'姐姐',item:'全美保養品',amount:80000,date:'2026-05-28',paid:0},
+  {id:2,person:'曾哥',item:'Alipay代墊',amount:3026,date:'2026-06-08',paid:0},
+  {id:3,person:'曾哥',item:'代墊款',amount:6449,date:'2026-06-22',paid:0},
+];
+const defaultFixed=[
+  {id:1,name:'Adobe Premiere',icon:'💻',amount:819,cycle:'monthly',note:'工作室',active:true},
+  {id:2,name:'iCloud',icon:'☁️',amount:90,cycle:'monthly',note:'',active:true},
+  {id:3,name:'Apple 服務費',icon:'📱',amount:120,cycle:'monthly',note:'',active:true},
+];
+
+
+// ====== 預載入歷史記錄 ======
+const HISTORICAL_RECORDS = [
+  // === 2026/04 ===
+  {id:202604001,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag臨停',amount:140,payment:'ctbc_cc',note:'',date:'2026-04-15',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202604002,type:'expense',cat:'special',catLabel:'特別支出',catIcon:'✨',item:'YSL包包 分期第1期',amount:7808,payment:'ctbc_cc',note:'漢神巨蛋分期03-06',date:'2026-04-15',tags:{adv:false,wed:true},advPerson:'',isMom:false},
+  {id:202604003,type:'expense',cat:'special',catLabel:'特別支出',catIcon:'✨',item:'鑽戒 分期第1期',amount:6900,payment:'ctbc_cc',note:'漢神巨蛋分期03-06',date:'2026-04-04',tags:{adv:false,wed:true},advPerson:'',isMom:false},
+
+  // === 2026/05 ===
+  {id:202605001,type:'income',cat:'salary',catLabel:'薪資',catIcon:'💼',item:'月薪',amount:37989,payment:'kaiji',note:'',date:'2026-05-29',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202605002,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag臨停',amount:60,payment:'ctbc_cc',note:'',date:'2026-05-29',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202605003,type:'advance',cat:'adv',catLabel:'代墊款',catIcon:'💛',item:'新加坡商保養品（姐姐）',amount:13335,payment:'ctbc_cc',note:'分期01-06',date:'2026-05-28',tags:{adv:true,wed:false},advPerson:'姐姐',isMom:false},
+  {id:202605004,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'高鐵',amount:2200,payment:'ctbc_cc',note:'高鐵智慧型手機',date:'2026-05-28',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202605005,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag加值',amount:400,payment:'ctbc_cc',note:'',date:'2026-05-26',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202605006,type:'subscription',cat:'cloud',catLabel:'雲端',catIcon:'☁️',item:'Apple服務',amount:1020,payment:'ctbc_cc',note:'APPLE.COM/BILL',date:'2026-05-25',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202605007,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag臨停',amount:140,payment:'ctbc_cc',note:'',date:'2026-05-23',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202605008,type:'expense',cat:'shopping',catLabel:'購物',catIcon:'🛍️',item:'MIKOMIK短褲',amount:8000,payment:'cathay_cc',note:'連加*MIKOMIK',date:'2026-05-29',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202605009,type:'expense',cat:'food',catLabel:'餐飲',catIcon:'🍜',item:'飲料',amount:91,payment:'cathay_cc',note:'清心福全新北市',date:'2026-05-24',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202605010,type:'expense',cat:'other',catLabel:'其他',catIcon:'📦',item:'SL-drmelaxi',amount:1662,payment:'cathay_cc',note:'',date:'2026-05-22',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202605011,type:'expense',cat:'shopping',catLabel:'購物',catIcon:'🛍️',item:'優衣庫',amount:1743,payment:'cathay_cc',note:'台灣優衣庫有限公司',date:'2026-05-22',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202605012,type:'expense',cat:'shopping',catLabel:'購物',catIcon:'🛍️',item:'優衣庫',amount:1180,payment:'cathay_cc',note:'台灣優衣庫有限公司',date:'2026-05-22',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202605013,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'Autopass停車',amount:143,payment:'taishin',note:'',date:'2026-05-24',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202605014,type:'expense',cat:'food',catLabel:'餐飲',catIcon:'🍜',item:'宏匯廣場',amount:2353,payment:'ctbc_cc',note:'餐飲',date:'2026-05-31',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+
+  // === 2026/06 ===
+  {id:202606001,type:'expense',cat:'special',catLabel:'特別支出',catIcon:'✨',item:'蜜月機票 EasyJet',amount:6390,payment:'taishin',note:'歐洲機票',date:'2026-06-01',tags:{adv:false,wed:true},advPerson:'',isMom:false},
+  {id:202606002,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag加值',amount:400,payment:'ctbc_cc',note:'',date:'2026-06-01',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606003,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag臨停',amount:1050,payment:'ctbc_cc',note:'搭高鐵回高雄',date:'2026-06-01',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606004,type:'expense',cat:'other',catLabel:'其他',catIcon:'📦',item:'情趣夢天堂',amount:790,payment:'taishin',note:'',date:'2026-06-03',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606005,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag加值',amount:400,payment:'ctbc_cc',note:'',date:'2026-06-04',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606006,type:'subscription',cat:'cloud',catLabel:'雲端',catIcon:'☁️',item:'Apple服務',amount:120,payment:'ctbc_cc',note:'APPLE.COM/BILL',date:'2026-06-04',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606007,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'USPACE停車',amount:160,payment:'cathay_cc',note:'連加*USPACE',date:'2026-06-04',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606008,type:'expense',cat:'other',catLabel:'其他',catIcon:'📦',item:'事可得國際',amount:2690,payment:'cathay_cc',note:'連加*事可得',date:'2026-06-03',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606009,type:'expense',cat:'special',catLabel:'特別支出',catIcon:'✨',item:'考試費',amount:250,payment:'taishin',note:'證券暨期貨市場',date:'2026-06-05',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606010,type:'expense',cat:'special',catLabel:'特別支出',catIcon:'✨',item:'考試費',amount:250,payment:'taishin',note:'證券暨期貨市場',date:'2026-06-05',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606011,type:'expense',cat:'special',catLabel:'特別支出',catIcon:'✨',item:'考試費',amount:1130,payment:'taishin',note:'證券暨期貨市場',date:'2026-06-05',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606012,type:'expense',cat:'entertainment',catLabel:'娛樂',catIcon:'🎬',item:'沐蘭精品旅館',amount:2610,payment:'ctbc_cc',note:'住宿',date:'2026-06-05',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606013,type:'advance',cat:'adv',catLabel:'代墊款',catIcon:'💛',item:'Alipay代墊（曾哥）',amount:3128,payment:'taishin',note:'',date:'2026-06-08',tags:{adv:true,wed:false},advPerson:'曾哥',isMom:false},
+  {id:202606014,type:'subscription',cat:'cloud',catLabel:'雲端',catIcon:'☁️',item:'Apple服務',amount:1210,payment:'ctbc_cc',note:'APPLE.COM/BILL',date:'2026-06-11',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606015,type:'subscription',cat:'cloud',catLabel:'雲端',catIcon:'☁️',item:'Apple服務',amount:300,payment:'ctbc_cc',note:'APPLE.COM/BILL',date:'2026-06-11',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606016,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'Autopass停車',amount:24,payment:'taishin',note:'',date:'2026-06-11',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606017,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag臨停',amount:40,payment:'ctbc_cc',note:'',date:'2026-06-12',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606018,type:'expense',cat:'food',catLabel:'餐飲',catIcon:'🍜',item:'海底撈火鍋',amount:3692,payment:'cathay_cc',note:'高雄漢神店',date:'2026-06-13',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606019,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag加值',amount:400,payment:'ctbc_cc',note:'',date:'2026-06-13',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606020,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag臨停',amount:40,payment:'ctbc_cc',note:'',date:'2026-06-13',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606021,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag臨停',amount:60,payment:'ctbc_cc',note:'',date:'2026-06-13',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606022,type:'studio',cat:'studio',catLabel:'工作室',catIcon:'🖥️',item:'Adobe 訂閱',amount:1050,payment:'ctbc_cc',note:'Adobe 800-333-5062',date:'2026-06-14',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606023,type:'expense',cat:'special',catLabel:'特別支出',catIcon:'✨',item:'婚禮西裝',amount:24000,payment:'kaiji',note:'',date:'2026-06-14',tags:{adv:false,wed:true},advPerson:'',isMom:false},
+  {id:202606024,type:'expense',cat:'beauty',catLabel:'美容',catIcon:'💇',item:'尤拿髮廊',amount:4920,payment:'ctbc_cc',note:'',date:'2026-06-16',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606025,type:'expense',cat:'telecom',catLabel:'電信',catIcon:'📶',item:'電話費',amount:599,payment:'ctbc_cc',note:'',date:'2026-06-02',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606026,type:'subscription',cat:'sw',catLabel:'軟體',catIcon:'💻',item:'Adobe Premiere Pro',amount:819,payment:'ctbc_cc',note:'',date:'2026-06-13',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606027,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag臨停',amount:40,payment:'ctbc_cc',note:'',date:'2026-06-07',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606028,type:'expense',cat:'studio',catLabel:'工作室',catIcon:'🖥️',item:'蝦皮工作室材料',amount:355,payment:'ctbc_cc',note:'樂購蝦皮-dada38',date:'2026-06-07',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606029,type:'expense',cat:'studio',catLabel:'工作室',catIcon:'🖥️',item:'蝦皮工作室材料',amount:380,payment:'ctbc_cc',note:'樂購蝦皮-km5653',date:'2026-06-07',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606030,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'eTag加值',amount:400,payment:'ctbc_cc',note:'',date:'2026-06-10',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+
+  // 台新新消費（從截圖）
+  {id:202606101,type:'subscription',cat:'ai_tool',catLabel:'AI工具',catIcon:'🤖',item:'Anthropic Claude',amount:1426,payment:'taishin',note:'',date:'2026-06-22',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606200,type:'advance',cat:'adv',catLabel:'代墊款',catIcon:'💛',item:'曾哥代墊',amount:6449,payment:'taishin',note:'',date:'2026-06-22',tags:{adv:true,wed:false},advPerson:'曾哥',isMom:false},
+  {id:202606201,type:'expense',cat:'other',catLabel:'其他',catIcon:'📦',item:'大陸手續費',amount:206,payment:'taishin',note:'',date:'2026-06-22',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606202,type:'expense',cat:'food',catLabel:'餐飲',catIcon:'🍜',item:'晚餐（老撈）',amount:2420,payment:'taishin',note:'',date:'2026-06-22',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606102,type:'expense',cat:'entertainment',catLabel:'娛樂',catIcon:'🎬',item:'ATT 4 FUN',amount:1430,payment:'taishin',note:'',date:'2026-06-21',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606103,type:'expense',cat:'shopping',catLabel:'購物',catIcon:'🛍️',item:'EGGKA 洋裝',amount:2057,payment:'taishin',note:'',date:'2026-06-19',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606104,type:'expense',cat:'special',catLabel:'特別支出',catIcon:'✨',item:'考試費（分期）',amount:1130,payment:'taishin',note:'財團法人中華民國證券暨期貨市場',date:'2026-06-18',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606105,type:'expense',cat:'transport',catLabel:'交通',catIcon:'🚗',item:'Autopass停車',amount:24,payment:'taishin',note:'',date:'2026-06-11',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606106,type:'expense',cat:'special',catLabel:'特別支出',catIcon:'✨',item:'考試費',amount:250,payment:'taishin',note:'財團法人中華民國證券暨期貨市場',date:'2026-06-05',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606107,type:'expense',cat:'special',catLabel:'特別支出',catIcon:'✨',item:'考試費（分期）',amount:1130,payment:'taishin',note:'財團法人中華民國證券暨期貨市場',date:'2026-06-05',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606108,type:'expense',cat:'special',catLabel:'特別支出',catIcon:'✨',item:'考試費',amount:250,payment:'taishin',note:'財團法人中華民國證券暨期貨市場',date:'2026-06-05',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+  {id:202606109,type:'expense',cat:'other',catLabel:'其他',catIcon:'📦',item:'DP-TOY',amount:790,payment:'taishin',note:'',date:'2026-06-03',tags:{adv:false,wed:false},advPerson:'',isMom:false},
+];
+
+function load(){
+  try{records=JSON.parse(localStorage.getItem('xz3_rec')||'[]');}catch(e){}
+  // 合併歷史記錄（只在初次載入時）
+  const existingIds=new Set(records.map(r=>r.id));
+  const toAdd=HISTORICAL_RECORDS.filter(r=>!existingIds.has(r.id));
+  if(toAdd.length>0){records=[...records,...toAdd];localStorage.setItem('xz3_rec',JSON.stringify(records));}
+  try{repayments=JSON.parse(localStorage.getItem('xz3_repay')||'[]');}catch(e){}
+  try{const s=JSON.parse(localStorage.getItem('xz3_settings'));if(s)settings=Object.assign(settings,s);}catch(e){}
+  try{installments=JSON.parse(localStorage.getItem('xz3_inst')||JSON.stringify(defaultInst));}catch(e){installments=defaultInst;}
+  // 強制合併新預設分期
+  const instIds=new Set(installments.map(i=>i.id));
+  const newInsts=defaultInst.filter(i=>!instIds.has(i.id));
+  if(newInsts.length>0){installments=[...installments,...newInsts];localStorage.setItem('xz3_inst',JSON.stringify(installments));}
+  try{advances=JSON.parse(localStorage.getItem('xz3_adv')||JSON.stringify(defaultAdv));}catch(e){advances=defaultAdv;}
+  // 強制同步 defaultAdv 的更新（金額、項目名稱）
+  defaultAdv.forEach(da=>{
+    const idx=advances.findIndex(a=>a.id===da.id);
+    if(idx>=0){
+      // 更新金額和項目名稱，保留已收款進度
+      advances[idx].amount=da.amount;
+      advances[idx].item=da.item;
+      advances[idx].person=da.person;
+    } else {
+      advances.push(da);
+    }
+  });
+  localStorage.setItem('xz3_adv',JSON.stringify(advances));
+  try{fixedItems=JSON.parse(localStorage.getItem('xz3_fixed')||JSON.stringify(defaultFixed));}catch(e){fixedItems=defaultFixed;}
+  // 同步動態帳戶到 PAYMENTS
+  if(settings.accounts && settings.accounts.length > 0){
+    settings.accounts.forEach(a=>{
+      if(!PAYMENTS.find(p=>p.id===a.id)) PAYMENTS.push({id:a.id,label:a.label,type:'bank',updated:a.updated});
+      else { const pi=PAYMENTS.findIndex(p=>p.id===a.id); if(pi>=0) PAYMENTS[pi].label=a.label; }
+    });
+  }
+  // 同步動態信用卡到 PAYMENTS
+  if(settings.cards && settings.cards.length > 0){
+    settings.cards.forEach(cc=>{
+      if(!PAYMENTS.find(p=>p.id===cc.id)) PAYMENTS.push({id:cc.id,label:cc.label,type:'cc'});
+      else { const pi=PAYMENTS.findIndex(p=>p.id===cc.id); if(pi>=0) PAYMENTS[pi].label=cc.label; }
+    });
+  }
+}
+function saveAll(){
+  localStorage.setItem('xz3_rec',JSON.stringify(records));
+  localStorage.setItem('xz3_repay',JSON.stringify(repayments));
+  localStorage.setItem('xz3_settings',JSON.stringify(settings));
+  localStorage.setItem('xz3_inst',JSON.stringify(installments));
+  localStorage.setItem('xz3_adv',JSON.stringify(advances));
+  localStorage.setItem('xz3_fixed',JSON.stringify(fixedItems));
+}
+
+function fmt(n){return '$ '+Math.round(n).toLocaleString();}
+function fmtN(n){return Math.round(n).toLocaleString();}
+
+// ====== INSTALLMENT HELPERS ======
+function instIsActive(inst,y,m){
+  const si=inst.startYear*12+inst.startMonth;
+  const ei=si+inst.total-1;
+  const ci=y*12+m;
+  return ci>=si&&ci<=ei;
+}
+function instDoneCount(inst,y,m){
+  const si=inst.startYear*12+inst.startMonth;
+  const ci=y*12+m;
+  return Math.min(inst.total,Math.max(0,ci-si+1));
+}
+function instEndLabel(inst){
+  const em=inst.startMonth+inst.total-1;
+  return `${inst.startYear+Math.floor(em/12)}年${(em%12)+1}月`;
+}
+function advIsVisible(adv){return adv.amount-adv.paid>0;}
+
+// ====== MONTH NAV ======
+function buildYearSel(){
+  const sel=document.getElementById('year-sel');sel.innerHTML='';
+  for(let y=2026;y<=2035;y++){const o=document.createElement('option');o.value=y;o.textContent=y+'年';if(y===viewYear)o.selected=true;sel.appendChild(o);}
+}
+function onYearChange(){viewYear=parseInt(document.getElementById('year-sel').value);updateAll();}
+function changeMonth(d){
+  viewMonth+=d;
+  if(viewMonth<0){viewMonth=11;viewYear--;}
+  if(viewMonth>11){viewMonth=0;viewYear++;}
+  document.getElementById('year-sel').value=viewYear;
+  updateAll();
+}
+function updateAll(){
+  document.getElementById('month-label').textContent=(viewMonth+1)+'月';
+  updateSummary();
+  const active=document.querySelector('.panel.active');
+  if(!active)return;
+  const id=active.id;
+  if(id==='panel-list')renderRecords();
+  if(id==='panel-fixed')renderFixed();
+  if(id==='panel-analysis')renderAnalysis();
+  if(id==='panel-accounts')renderAccounts();
+}
+function monthRecs(){
+  return records.filter(r=>{const d=new Date(r.date+'T12:00:00');return d.getFullYear()===viewYear&&d.getMonth()===viewMonth;});
+}
+function updateSummary(){
+  const mr=monthRecs();
+  // 媽媽卡不計入總支出
+  const inc=mr.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
+  const exp=mr.filter(r=>['expense','subscription','advance'].includes(r.type)).reduce((s,r)=>s+r.amount,0);
+  const net=inc-exp;
+  const fmtCormorant=(n,col)=>`<span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:${col};font-variant-numeric:tabular-nums">${n<0?'-':''}${Math.abs(Math.round(n)).toLocaleString()}</span>`;
+  document.getElementById('sum-income').innerHTML=fmtCormorant(inc,'var(--green)');
+  document.getElementById('sum-expense').innerHTML=fmtCormorant(exp,'var(--red)');
+  document.getElementById('sum-balance').innerHTML=fmtCormorant(net,net>=0?'var(--gold)':'var(--red)');
+}
+
+// ====== STEP FORM ======
+function renderBreadcrumb(){
+  const parts=[];
+  if(draft.type){const t=TYPES.find(x=>x.id===draft.type);parts.push(t?.label);}
+  if(draft.cat){const cats=CATS[draft.type]||[];const c=cats.find(x=>x.id===draft.cat);if(c)parts.push(c.label);}
+  if(draft.item)parts.push(draft.item);
+  if(draft.amount)parts.push(fmt(draft.amount));
+  if(draft.payment){const p=PAYMENTS.find(x=>x.id===draft.payment);if(p)parts.push(p.label);}
+  document.getElementById('breadcrumb').innerHTML=parts.length
+    ?parts.map((p,i)=>`<span class="bc-item">${p}</span>${i<parts.length-1?'<span class="sep"> › </span>':''}`).join('')
+    :'<span style="color:var(--text3)">選擇類型開始記帳</span>';
+}
+function renderStep(){
+  renderBreadcrumb();
+  const el=document.getElementById('step-content');
+  if(step===0){
+    el.innerHTML=`<div class="step-title">Select Type · 選擇類型</div>
+    <div class="type-grid">${TYPES.map(t=>`<div class="type-card ${t.cls}${draft.type===t.id?' selected':''}" onclick="selType('${t.id}')"><span class="ti">${t.icon}</span><span class="tn">${t.label}</span></div>`).join('')}</div>`;
+  }else if(step===1){
+    const cats=CATS[draft.type]||[];
+    const hasGroups=(draft.type==='expense'||draft.type==='income')&&cats.some(c=>c.group);
+    let catHTML='';
+    if(hasGroups){
+      const groups=[...new Set(cats.map(c=>c.group))];
+      const groupLabel={personal:'個人',studio:'工作室'};
+      catHTML=groups.map(g=>{
+        const gc=cats.filter(c=>c.group===g);
+        return `<div style="margin-bottom:12px">
+          <div style="font-size:8px;color:var(--text3);letter-spacing:0.25em;text-transform:uppercase;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border-light)">${groupLabel[g]||g}</div>
+          <div class="grid-btns col2">${gc.map(c=>`<button class="choice-btn${draft.cat===c.id?' selected':''}" onclick="selCat('${c.id}')"><span class="ci">${c.icon}</span>${c.label}</button>`).join('')}</div>
+        </div>`;
+      }).join('');
+    } else {
+      catHTML=`<div class="grid-btns col2">${cats.map(c=>`<button class="choice-btn${draft.cat===c.id?' selected':''}" onclick="selCat('${c.id}')"><span class="ci">${c.icon}</span>${c.label}</button>`).join('')}</div>`;
+    }
+    el.innerHTML=`<div class="step-title">Select Category · 選擇分類</div>${catHTML}
+    <div class="step-actions"><button class="btn-back" onclick="goStep(0)">◀ 返回</button></div>`;
+  }else if(step===2){
+    const cats=CATS[draft.type]||[];
+    const cat=cats.find(c=>c.id===draft.cat);
+    const items=(cat?.items||[]);
+    el.innerHTML=`<div class="step-title">Select Item · 選擇細項</div>
+    <div class="grid-btns col2">${items.map(i=>{
+      const isManual=i==='其他（手動輸入）';
+      return `<button class="choice-btn${draft.item===i?' selected':''}" onclick="${isManual?'selManual()':'selItem(\''+i+'\')'}">
+        ${isManual?'✏️ 手動輸入':i}</button>`;
+    }).join('')}</div>
+    <div id="manual-area" style="display:none;margin-top:8px">
+      <input type="text" class="note-input" id="manual-inp" placeholder="輸入細項..." style="margin-bottom:8px">
+      <button class="btn-next" onclick="confirmManual()">確認</button>
+    </div>
+    <div class="step-actions"><button class="btn-back" onclick="goStep(1)">◀ 返回</button></div>`;
+  }else if(step===3){
+    el.innerHTML=`<div class="amount-display"><div class="ad-label">金額（新台幣）</div><div class="ad-val">$${draft.amount||'0'}</div></div>
+    <div class="numpad">${['1','2','3','4','5','6','7','8','9','.','0','⌫'].map(k=>`<button class="num-btn${k==='⌫'?' del':''}" onclick="numPress('${k}')">${k}</button>`).join('')}</div>
+    <div class="step-actions"><button class="btn-back" onclick="goStep(2)">◀ 返回</button><button class="btn-next" onclick="goStep(4)">下一步 ▶</button></div>`;
+  }else if(step===4){
+    el.innerHTML=`<div class="step-title">Payment Method · 付款方式</div>
+    <div class="pay-grid">${PAYMENTS.map(p=>`<div class="pay-card${p.id==='mom_card'?' mom-card-opt':''}${draft.payment===p.id?' selected':''}" onclick="selPay('${p.id}')">
+      <div class="pn">${p.label}</div>
+      <div class="pb">${p.type==='cc'?'💳 信用卡':p.type==='mom'?'💗 媽媽':p.type==='other'?'📦 其他':'🏦 帳戶'}</div>
+    </div>`).join('')}</div>
+    <div class="step-actions"><button class="btn-back" onclick="goStep(3)">◀ 返回</button><button class="btn-next" onclick="goStep(5)">下一步 ▶</button></div>`;
+  }else if(step===5){
+    const showSpec=['expense','advance'].includes(draft.type);
+    el.innerHTML=`
+    ${showSpec?`<div class="step-title">特殊標記</div>
+    <div class="special-row">
+      <button class="stag${draft.tags.adv?' on-adv':''}" onclick="togTag('adv')">💛 代墊款</button>
+      <button class="stag${draft.tags.wed?' on-wed':''}" onclick="togTag('wed')">💍 婚禮</button>
+    </div>
+    ${draft.tags.adv?`<input type="text" class="text-inp" id="adv-p-inp" value="${draft.advPerson}" placeholder="代墊對象..." oninput="draft.advPerson=this.value">`:''}`:''}
+    <div class="step-title">備註（選填）</div>
+    <textarea class="note-input" id="note-inp" rows="2" placeholder="備註...">${draft.note}</textarea>
+    <button class="btn-primary" onclick="submitRec()">✅ 完成記帳</button>
+    <div class="step-actions"><button class="btn-back" onclick="goStep(4)">◀ 返回</button></div>`;
+    setTimeout(()=>{const n=document.getElementById('note-inp');if(n)n.oninput=function(){draft.note=this.value};},50);
+  }
+}
+function goStep(s){step=s;renderStep();}
+function selType(t){draft.type=t;draft.cat=null;draft.item=null;step=1;renderStep();}
+function selCat(c){draft.cat=c;step=2;renderStep();}
+function selItem(i){draft.item=i;step=3;renderStep();}
+function selManual(){
+  const ma=document.getElementById('manual-area');
+  if(ma){ma.style.display='block';const inp=document.getElementById('manual-inp');if(inp)inp.focus();}
+}
+function confirmManual(){const v=document.getElementById('manual-inp')?.value.trim();if(!v){showToast('請輸入細項');return;}draft.item=v;step=3;renderStep();}
+function selPay(p){draft.payment=p;renderStep();}
+function togTag(t){draft.tags[t]=!draft.tags[t];renderStep();}
+function numPress(k){
+  if(k==='⌫')draft.amount=draft.amount.slice(0,-1);
+  else if(k==='.'){if(!draft.amount.includes('.'))draft.amount+=k;}
+  else{if(draft.amount==='0')draft.amount=k;else draft.amount+=k;}
+  renderStep();
+}
+function submitRec(){
+  if(!draft.type||!draft.cat||!draft.item){showToast('請完成所有步驟');return;}
+  if(!draft.amount||parseFloat(draft.amount)===0){showToast('請輸入金額');return;}
+  const today=new Date();
+  const d=`${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const cats=CATS[draft.type]||[];
+  const cat=cats.find(c=>c.id===draft.cat);
+  // 如果付款方式是媽媽卡，自動標記
+  const isMomCard=draft.payment==='mom_card';
+  records.push({id:Date.now(),type:draft.type,cat:draft.cat,catLabel:cat?.label||draft.cat,catIcon:cat?.icon||'📦',
+    item:draft.item,amount:parseFloat(draft.amount),payment:draft.payment,note:draft.note,date:d,
+    tags:{...draft.tags},advPerson:draft.advPerson,isMom:isMomCard});
+  saveAll();updateAll();
+  showToast('✅ 已記帳 '+fmt(draft.amount));
+  draft={type:null,cat:null,item:null,amount:'',payment:null,note:'',tags:{adv:false,wed:false},advPerson:''};
+  step=0;renderStep();
+}
+
+// ====== QUICK INPUT ======
+function parseQuick(text){
+  if(!text.trim())return null;
+  const numMatch=text.match(/(\d+(?:\.\d+)?)/);
+  if(!numMatch)return null;
+  const amount=parseFloat(numMatch[1]);
+  const lower=text.toLowerCase();
+  for(const m of QUICK_MAP){if(m.kw.some(k=>lower.includes(k.toLowerCase())))return{...m,amount};}
+  return{type:'expense',cat:'other',item:text.replace(numMatch[0],'').trim()||'其他',amount};
+}
+function onQuickInput(){
+  const text=document.getElementById('quick-inp').value;
+  const r=parseQuick(text);
+  const el=document.getElementById('quick-preview');
+  if(!r){el.innerHTML='<span style="color:var(--text3)">辨識結果會顯示在這裡</span>';return;}
+  const t=TYPES.find(x=>x.id===r.type)||TYPES[0];
+  const cats=CATS[r.type]||[];
+  const c=cats.find(x=>x.id===r.cat);
+  el.innerHTML=`辨識為：<span>${t.icon} ${t.label}</span> › <span>${c?.icon||'📦'} ${c?.label||r.cat}</span> › <span>${r.item}</span> › <span>${fmt(r.amount)}</span>`;
+}
+function submitQuick(){
+  const text=document.getElementById('quick-inp').value.trim();
+  const r=parseQuick(text);
+  if(!r){showToast('無法辨識，請手動輸入');return;}
+  const today=new Date();
+  const d=`${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const cats=CATS[r.type]||[];
+  const cat=cats.find(c=>c.id===r.cat);
+  records.push({id:Date.now(),type:r.type,cat:r.cat,catLabel:cat?.label||r.cat,catIcon:cat?.icon||'📦',
+    item:r.item,amount:r.amount,payment:null,note:'',date:d,tags:{adv:false,wed:false},advPerson:'',isMom:false});
+  saveAll();updateAll();
+  document.getElementById('quick-inp').value='';
+  document.getElementById('quick-preview').innerHTML='辨識結果會顯示在這裡';
+  showToast('✅ 已記帳 '+fmt(r.amount));
+}
+
+// ====== RECORDS ======
+function renderRecords(){
+  const mr=monthRecs().slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  const el=document.getElementById('records-area');
+  if(!mr.length){el.innerHTML='<div style="text-align:center;padding:3rem;color:var(--text3);font-size:14px">本月尚無記錄</div>';return;}
+  const groups={};
+  mr.forEach(r=>{groups[r.date]=groups[r.date]||[];groups[r.date].push(r);});
+  el.innerHTML=Object.entries(groups).sort((a,b)=>b[0].localeCompare(a[0])).map(([date,rs])=>{
+    const d=new Date(date+'T12:00:00');
+    const lbl=`${d.getMonth()+1}月${d.getDate()}日（${'日一二三四五六'[d.getDay()]}）`;
+    const tot=rs.filter(r=>!r.isMom).reduce((s,r)=>r.type==='income'?s+r.amount:s-r.amount,0);
+    return `<div class="day-group">
+      <div class="day-label"><span>${lbl}</span><span style="color:${tot>=0?'var(--green)':'var(--red)'}">${tot>=0?'+':''}${fmtN(tot)}</span></div>
+      ${rs.map(r=>{
+        const pay=PAYMENTS.find(p=>p.id===r.payment);
+        const isInc=r.type==='income'||r.type==='saving'||r.type==='invest';
+        const col=isInc?'var(--green)':r.isMom?'var(--pink)':'var(--red)';
+        const bg=r.isMom?'var(--pink-bg)':r.type==='subscription'?'var(--purple-bg)':r.type==='income'?'var(--green-bg)':r.type==='advance'?'var(--yellow-bg)':'var(--red-bg)';
+        const badges=[
+          r.isMom?'<span class="rec-badge badge-mom">媽媽卡</span>':'',
+          r.tags?.adv?`<span class="rec-badge badge-adv">代墊${r.advPerson?' '+r.advPerson:''}</span>`:'',
+          r.tags?.wed?'<span class="rec-badge badge-wed">婚禮</span>':'',
+        ].filter(Boolean).join('');
+        return `<div class="record-item${r.isMom?' is-mom':''}" onclick="openEditRec(${r.id})">
+          <div class="rec-icon" style="background:${bg}">${r.catIcon||'📦'}</div>
+          <div class="rec-info">
+            <div class="rec-main">${r.item}${r.note?' · '+r.note:''}</div>
+            <div class="rec-sub">${r.catLabel}${pay?' · '+pay.label:''}${badges}</div>
+          </div>
+          <div class="rec-right">
+            <div class="rec-amount" style="color:${col}">${isInc?'+':'-'}${fmtN(r.amount)}</div>
+            <div class="rec-pay">${r.date}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <button class="rec-del" onclick="openEdit(${r.id})" style="font-size:9px;letter-spacing:0.06em;opacity:0.7">編輯</button>
+            <button class="rec-del" onclick="deleteRec(${r.id})" style="font-size:9px;letter-spacing:0.06em;opacity:0.5">刪除</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+function deleteRec(id){if(!confirm('確定刪除？'))return;records=records.filter(r=>r.id!==id);saveAll();updateAll();showToast('已刪除');}
+
+// ── 編輯記錄 ──
+const CAT_META={
+  food:{label:'餐飲',icon:'🍜'},transport:{label:'交通',icon:'🚗'},shopping:{label:'購物',icon:'🛍️'},
+  beauty:{label:'美容',icon:'💇'},entertainment:{label:'娛樂',icon:'🎬'},health:{label:'醫療',icon:'💊'},
+  home:{label:'居家',icon:'🏠'},fuel:{label:'加油',icon:'⛽'},telecom:{label:'電信',icon:'📶'},
+  special:{label:'特別支出',icon:'✨'},studio:{label:'工作室設備',icon:'🖥️'},studio_other:{label:'工作室雜支',icon:'📐'},
+  other:{label:'其他',icon:'📦'},work_salary:{label:'薪資',icon:'💼'},work_studio:{label:'工作室收入',icon:'🖥️'},
+  invest_in:{label:'投資收益',icon:'📈'},gift:{label:'紅包',icon:'🧧'},transfer_in:{label:'轉入',icon:'🔄'},
+  other_in:{label:'其他收入',icon:'💰'},video:{label:'影音',icon:'📺'},music:{label:'音樂',icon:'🎵'},
+  ai_tool:{label:'AI工具',icon:'🤖'},cloud:{label:'雲端',icon:'☁️'},sw:{label:'軟體',icon:'💻'},
+  adv:{label:'代墊款',icon:'💛'},mom_food:{label:'媽媽-餐飲',icon:'🍜'},mom_fuel:{label:'媽媽-加油',icon:'⛽'},
+  mom_shop:{label:'媽媽-購物',icon:'🛍️'},mom_other:{label:'媽媽-其他',icon:'📦'},
+};
+
+function openEditRec(id){
+  const r=records.find(x=>x.id===id);
+  if(!r)return;
+  document.getElementById('edit-id').value=id;
+  document.getElementById('edit-item').value=r.item||'';
+  document.getElementById('edit-amount').value=r.amount||'';
+  document.getElementById('edit-type').value=r.type||'expense';
+  document.getElementById('edit-cat').value=r.cat||'other';
+  document.getElementById('edit-payment').value=r.payment||'';
+  document.getElementById('edit-date').value=r.date||'';
+  document.getElementById('edit-note').value=r.note||'';
+  document.getElementById('edit-tag-adv').checked=r.tags?.adv||false;
+  document.getElementById('edit-tag-wed').checked=r.tags?.wed||false;
+  document.getElementById('edit-adv-person').value=r.advPerson||'';
+  document.getElementById('edit-adv-person-wrap').style.display=r.tags?.adv?'block':'none';
+  document.getElementById('edit-tag-adv').onchange=function(){
+    document.getElementById('edit-adv-person-wrap').style.display=this.checked?'block':'none';
+  };
+  openModal('edit-modal');
+}
+
+function deleteFromEdit(){
+  const id=parseInt(document.getElementById('edit-id').value);
+  if(!confirm('確定刪除？'))return;
+  records=records.filter(r=>r.id!==id);
+  saveAll();closeModal('edit-modal');updateAll();showToast('已刪除');
+}
+function saveEdit(){
+  const id=parseInt(document.getElementById('edit-id').value);
+  const idx=records.findIndex(r=>r.id===id);
+  if(idx<0){showToast('找不到記錄');return;}
+  const item=document.getElementById('edit-item').value.trim();
+  const amount=parseFloat(document.getElementById('edit-amount').value);
+  const type=document.getElementById('edit-type').value;
+  const cat=document.getElementById('edit-cat').value;
+  const payment=document.getElementById('edit-payment').value;
+  const date=document.getElementById('edit-date').value;
+  const note=document.getElementById('edit-note').value.trim();
+  const tagAdv=document.getElementById('edit-tag-adv').checked;
+  const tagWed=document.getElementById('edit-tag-wed').checked;
+  const advPerson=document.getElementById('edit-adv-person').value.trim();
+  if(!item){showToast('請輸入名稱');return;}
+  if(!amount||amount<=0){showToast('請輸入金額');return;}
+  const meta=CAT_META[cat]||{label:cat,icon:'📦'};
+  const isMom=payment==='mom_card'||type==='mom';
+  records[idx]={...records[idx],item,amount,type,cat,catLabel:meta.label,catIcon:meta.icon,
+    payment,date,note,tags:{adv:tagAdv,wed:tagWed},advPerson:tagAdv?advPerson:'',isMom};
+  saveAll();closeModal('edit-modal');updateAll();showToast('✅ 已更新');
+}
+
+function openEdit(id){
+  const r=records.find(x=>x.id===id);
+  if(!r)return;
+  document.getElementById('edit-id').value=id;
+  document.getElementById('edit-item').value=r.item||'';
+  document.getElementById('edit-cat').value=r.cat||'other';
+  document.getElementById('edit-payment').value=r.payment||'';
+  document.getElementById('edit-note').value=r.note||'';
+  document.getElementById('edit-amount').value=r.amount||0;
+  openModal('edit-modal');
+}
+function deleteFromEdit(){
+  const id=parseInt(document.getElementById('edit-id').value);
+  if(!confirm('確定刪除？'))return;
+  records=records.filter(r=>r.id!==id);
+  saveAll();closeModal('edit-modal');updateAll();showToast('已刪除');
+}
+function saveEdit(){
+  const id=parseInt(document.getElementById('edit-id').value);
+  const idx=records.findIndex(r=>r.id===id);
+  if(idx<0)return;
+  const newCat=document.getElementById('edit-cat').value;
+  const newPay=document.getElementById('edit-payment').value;
+  // look up cat label/icon
+  const allCats=Object.values(CATS).flat();
+  const catObj=allCats.find(c=>c.id===newCat);
+  const payObj=PAYMENTS.find(p=>p.id===newPay);
+  records[idx]={
+    ...records[idx],
+    item:document.getElementById('edit-item').value.trim()||records[idx].item,
+    cat:newCat,
+    catLabel:catObj?.label||records[idx].catLabel,
+    catIcon:catObj?.icon||records[idx].catIcon,
+    payment:newPay,
+    note:document.getElementById('edit-note').value.trim(),
+    amount:parseFloat(document.getElementById('edit-amount').value)||records[idx].amount,
+    isMom:newPay==='mom_card',
+  };
+  saveAll();closeModal('edit-modal');updateAll();showToast('✅ 已更新');
+}
+
+// ====== FIXED EXPENSES ======
+let fxCycleVal='monthly';
+function selFxCycle(c,el){
+  fxCycleVal=c;
+  document.querySelectorAll('#fixed-modal .choice-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function submitFixed(){
+  const name=document.getElementById('fx-name').value.trim();
+  const icon=document.getElementById('fx-icon').value.trim()||'📌';
+  const amount=parseFloat(document.getElementById('fx-amount').value);
+  const note=document.getElementById('fx-note').value.trim();
+  if(!name||!amount){showToast('請填寫名稱和金額');return;}
+  fixedItems.push({id:Date.now(),name,icon,amount,cycle:fxCycleVal,note,active:true});
+  saveAll();closeModal('fixed-modal');renderFixed();showToast('✅ 已新增');
+  document.getElementById('fx-name').value='';
+  document.getElementById('fx-icon').value='';
+  document.getElementById('fx-amount').value='';
+  document.getElementById('fx-note').value='';
+}
+function toggleFixed(id){
+  const idx=fixedItems.findIndex(f=>f.id===id);
+  if(idx>=0)fixedItems[idx].active=!fixedItems[idx].active;
+  saveAll();renderFixed();
+}
+function deleteFixed(id){
+  if(!confirm('確定刪除？'))return;
+  fixedItems=fixedItems.filter(f=>f.id!==id);
+  saveAll();renderFixed();showToast('已刪除');
+}
+function renderFixed(){
+  const el=document.getElementById('fixed-area');
+  const cycleLabel={monthly:'每月',quarterly:'每季',yearly:'每年',other:'其他'};
+  const activeMonthly=fixedItems.filter(f=>f.active&&f.cycle==='monthly').reduce((s,f)=>s+f.amount,0);
+  const activeYearly=fixedItems.filter(f=>f.active&&f.cycle==='yearly').reduce((s,f)=>s+f.amount,0);
+  const activeQuarterly=fixedItems.filter(f=>f.active&&f.cycle==='quarterly').reduce((s,f)=>s+f.amount,0);
+  const monthlyEquiv=activeMonthly+Math.round(activeYearly/12)+Math.round(activeQuarterly/3);
+
+  el.innerHTML=`<div style="margin-top:14px">
+    <div class="fixed-summary">
+      <div>
+        <div class="fixed-summary-label">本月固定支出估算</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">每月訂閱 + 年費均攤</div>
+      </div>
+      <div class="fixed-summary-amount">${fmtN(monthlyEquiv)}</div>
+    </div>
+    <div class="card-section">
+      <div class="card-section-head"><div class="card-h-left"><span class="card-h-no">NO. 01</span><span class="card-h-title">固定支出</span><span class="card-h-en">Fixed Expenses</span></div><button class="add-btn" onclick="openModal('fixed-modal')">＋ Add</button></div>
+      ${fixedItems.length===0?'<div style="color:var(--text3);font-size:13px;padding:8px 0">尚無固定支出，點擊新增</div>':
+        fixedItems.map(f=>`<div class="fixed-item${f.active?'':' inactive'}">
+              <div class="fixed-icon">${f.icon}</div>
+          <div class="fixed-info">
+            <div class="fixed-name">${f.name}</div>
+            <div class="fixed-sub">${f.note||''}${f.note?' · ':''}${cycleLabel[f.cycle]||f.cycle}</div>
+          </div>
+          <div>
+            <div class="fixed-amount">$ ${fmtN(f.amount)}</div>
+            <div class="fixed-cycle">${f.cycle==='yearly'?'年費 ≈ '+fmtN(Math.round(f.amount/12))+'/月':''}</div>
+          </div>
+          <button class="fixed-toggle${f.active?' on':''}" onclick="toggleFixed(${f.id})" title="${f.active?'停用':'啟用'}"></button>
+          <button class="fixed-del" onclick="deleteFixed(${f.id})">刪</button>
+        </div>`).join('')}
+    </div>
+    <div class="card-section">
+      <div class="card-section-head"><div class="card-h-left"><span class="card-h-no">NO. 02</span><span class="card-h-title">訂閱統計</span><span class="card-h-en">Subscription Summary</span></div></div>
+      ${['monthly','quarterly','yearly','other'].map(c=>{
+        const items=fixedItems.filter(f=>f.active&&f.cycle===c);
+        if(!items.length)return '';
+        const total=items.reduce((s,f)=>s+f.amount,0);
+        return `<div style="margin-bottom:12px">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase">${cycleLabel[c]} — 合計 $ ${fmtN(total)}</div>
+          ${items.map(f=>`<div class="bar-row" style="margin-bottom:6px">
+            <div class="bar-label">${f.icon} ${f.name}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${total>0?Math.round(f.amount/total*100):0}%;background:var(--gold)"></div></div>
+            <div class="bar-amt">${fmtN(f.amount)}</div>
+          </div>`).join('')}
+        </div>`;
+      }).join('')}
+      ${fixedItems.filter(f=>f.active).length===0?'<div style="color:var(--text3);font-size:13px">尚無啟用的固定支出</div>':''}
+    </div>
+  </div>`;
+}
+
+// ====== ANALYSIS ======
+function renderAnalysis(){
+  const mr=monthRecs();
+  const el=document.getElementById('analysis-area');
+  // 媽媽卡不計入支出分析
+  const expense=mr.filter(r=>['expense','subscription','advance'].includes(r.type));
+  const income=mr.filter(r=>r.type==='income');
+  const totalExp=expense.reduce((s,r)=>s+r.amount,0);
+  const totalInc=income.reduce((s,r)=>s+r.amount,0);
+  const byCat={};
+  expense.forEach(r=>{byCat[r.cat]=byCat[r.cat]||{label:r.catLabel,icon:r.catIcon,amount:0};byCat[r.cat].amount+=r.amount;});
+  const catRows=Object.entries(byCat).sort((a,b)=>b[1].amount-a[1].amount);
+  const barColors=['#b05050','#5070b0','#a06090','#6090b0','#508060','#b07040','#706080','#508070'];
+  const budgetRows=Object.entries(settings.budgets).map(([k,b])=>{
+    const cat=CATS.expense.find(c=>c.id===k);
+    const spent=expense.filter(r=>r.cat===k).reduce((s,r)=>s+r.amount,0);
+    const pct=b>0?Math.min(100,Math.round(spent/b*100)):0;
+    return{id:k,label:cat?.label||k,icon:cat?.icon||'📦',budget:b,spent,pct};
+  }).filter(b=>b.budget>0);
+  // 媽媽卡統計
+  const momRecs=mr.filter(r=>r.isMom);
+  const momTotal=momRecs.reduce((s,r)=>s+r.amount,0);
+  // 訂閱費統計
+  const subTotal=mr.filter(r=>r.type==='subscription').reduce((s,r)=>s+r.amount,0);
+  const fixedMonthly=fixedItems.filter(f=>f.active&&f.cycle==='monthly').reduce((s,f)=>s+f.amount,0);
+
+  el.innerHTML=`
+  <div class="card-section" style="margin-top:10px">
+    <div class="card-section-head"><div class="card-h-left"><span class="card-h-no">NO. 01</span><span class="card-h-title">支出佔比</span><span class="card-h-en">Breakdown</span></div></div>
+    ${totalExp===0?'<div style="color:var(--text3);font-size:13px">本月無支出記錄</div>':catRows.map(([k,v],i)=>{
+      const pct=Math.round(v.amount/totalExp*100);
+      return `<div class="bar-row"><div class="bar-label">${v.icon} ${v.label}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${barColors[i%barColors.length]}"></div></div><div class="bar-pct">${pct}%</div><div class="bar-amt">${fmtN(v.amount)}</div></div>`;
+    }).join('')}
+  </div>
+  <div class="card-section">
+    <div class="card-section-head"><div class="card-h-left"><span class="card-h-no">NO. 02</span><span class="card-h-title">預算進度</span><span class="card-h-en">Budget</span></div></div>
+    ${budgetRows.length===0?'<div style="color:var(--text3);font-size:13px">前往設定頁設定預算</div>':budgetRows.map(b=>`
+      <div class="budget-row">
+        <div class="budget-label">${b.icon} ${b.label}</div>
+        <div class="budget-track"><div class="budget-fill ${b.pct>=100?'over':b.pct>=80?'warn':'ok'}" style="width:${b.pct}%"></div></div>
+        <div class="budget-nums">${fmtN(b.spent)}/${fmtN(b.budget)}</div>
+      </div>`).join('')}
+  </div>
+  <div class="card-section">
+    <div class="card-section-head"><div class="card-h-left"><span class="card-h-no">NO. 03</span><span class="card-h-title">訂閱費用</span><span class="card-h-en">Subscriptions</span></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:13px;border-bottom:1px solid var(--border)">
+      <span style="color:var(--text2)">本月記帳中的訂閱</span>
+      <strong style="color:var(--purple)">${fmtN(subTotal)}</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:13px">
+      <span style="color:var(--text2)">固定支出清單（每月啟用）</span>
+      <strong style="color:var(--gold)">${fmtN(fixedMonthly)}</strong>
+    </div>
+  </div>
+  <div class="mom-summary-card" style="margin-top:0;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${momRecs.length?'12px':'0'}">
+      <span style="font-size:13px;font-weight:600;color:var(--pink)">💗 媽媽卡本月（獨立統計）</span>
+      <span style="font-size:16px;font-weight:700;color:var(--pink)">${fmtN(momTotal)}</span>
+    </div>
+    ${momRecs.map(r=>`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:4px 0;border-bottom:1px solid rgba(176,96,128,0.15)">
+      <span>${r.catIcon} ${r.item||r.catLabel} <span style="color:var(--text3)">${r.date}</span></span>
+      <span style="color:var(--pink);font-weight:600">-${fmtN(r.amount)}</span>
+    </div>`).join('')}
+    ${momRecs.length===0?'<div style="font-size:12px;color:var(--text3)">本月尚無媽媽卡消費</div>':''}
+  </div>
+  <div class="card-section">
+    <div class="card-section-head"><div class="card-h-left"><span class="card-h-no">NO. 04</span><span class="card-h-title">月度摘要</span><span class="card-h-en">Summary</span></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:var(--green-bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:0.08em">總收入</div><div style="font-size:18px;font-weight:700;color:var(--green)">${fmtN(totalInc)}</div></div>
+      <div style="background:var(--red-bg);border-radius:10px;padding:12px;text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:0.08em">總支出</div><div style="font-size:18px;font-weight:700;color:var(--red)">${fmtN(totalExp)}</div></div>
+    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:2.2">
+      <div>結餘：<strong style="color:${totalInc-totalExp>=0?'var(--green)':'var(--red)'}">${fmt(totalInc-totalExp)}</strong></div>
+      <div>訂閱費：<strong>${fmtN(subTotal)}</strong></div>
+      <div>代墊款：<strong>${fmtN(mr.filter(r=>r.type==='advance').reduce((s,r)=>s+r.amount,0))}</strong></div>
+      <div style="color:var(--pink)">媽媽卡（不計入）：<strong>${fmtN(momTotal)}</strong></div>
+      <div>記帳筆數：<strong>${mr.length} 筆</strong></div>
+    </div>
+  </div>`;
+}
+
+// ====== ACCOUNTS ======
+function renderAccounts(){
+  const el=document.getElementById('accounts-area');
+  const mr=monthRecs();
+  const monthRepay=repayments.filter(r=>{const d=new Date(r.date);return d.getFullYear()===viewYear&&d.getMonth()===viewMonth;});
+
+  const accounts = settings.accounts || PAYMENTS.filter(p=>p.type==='bank').map(p=>({id:p.id,label:p.label,updated:p.updated}));
+  const bankHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+    <button class="add-btn" onclick="openAddAccount()">＋ 新增帳戶</button>
+  </div>`+accounts.map(p=>{
+    const bal=settings.bankBalance[p.id]||0;
+    const mExp=mr.filter(r=>r.payment===p.id&&['expense','subscription','advance'].includes(r.type)).reduce((s,r)=>s+r.amount,0);
+    const mInc=mr.filter(r=>r.payment===p.id&&r.type==='income').reduce((s,r)=>s+r.amount,0);
+    return `<div class="acct-card" onclick="openEditAccount('${p.id}')" style="cursor:pointer">
+      <div class="acct-top">
+        <div><div class="acct-name">${p.label}</div><div class="acct-updated">更新 ${p.updated||''} · 點擊編輯</div></div>
+        <span class="acct-type-badge badge-bank">存款</span>
+      </div>
+      <div class="acct-balance-row">
+        <div class="acct-stat bal"><div class="al">餘額</div><div class="av">${fmtN(bal)}</div></div>
+        <div class="acct-stat used"><div class="al">本月支出</div><div class="av">${fmtN(mExp)}</div></div>
+        <div class="acct-stat"><div class="al">本月收入</div><div class="av" style="color:var(--green)">${fmtN(mInc)}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const cards = settings.cards || PAYMENTS.filter(p=>p.type==='cc').map(p=>({id:p.id,label:p.label,billingDay:null,dueDay:null}));
+  const ccHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+    <button class="add-btn" onclick="openAddCard()">＋ 新增信用卡</button>
+  </div>`+cards.map(p=>{
+    const limit=settings.ccLimit[p.id]||0;
+    const bill=settings.ccBill[p.id]||{amount:0,status:'paid',label:'',due:''};
+    // ── 核心邏輯：以「實際可用額度」為基準 ──
+    // 1. 帳單金額（手動填，已繳清則0）
+    const billAmt = bill.status==='paid' ? 0 : (bill.manualAmount!=null ? bill.manualAmount : bill.amount||0);
+    // 2. 實際可用額度（從銀行App手動填）
+    const avail = (settings.ccAvail && settings.ccAvail[p.id] > 0)
+      ? settings.ccAvail[p.id] : limit - billAmt;
+    // 3. 未出帳 = 總額度 - 可用額度 - 帳單未繳（自動推算，含分期占額）
+    const unbilled = Math.max(0, limit - avail - billAmt);
+    // 4. 自動計算本期刷卡記錄（供參考）
+    const autoUnbilled = calcCCUnbilled(p.id);
+    const used = limit - avail;
+    const pct = limit>0?Math.min(100,Math.round(used/limit*100)):0;
+    const cls = pct>=80?'over':pct>=60?'warn':'ok';
+    const dueLabel = getDueDateLabel(p);
+    const isDue = bill.status==='due';
+    return `<div class="acct-card" onclick="openEditCard('${p.id}')" style="cursor:pointer;${isDue?'border-left:3px solid var(--red)':''}">
+      <div class="acct-top">
+        <div><div class="acct-name">${p.label}</div><div class="acct-updated" style="margin-top:2px">${dueLabel}</div></div>
+        <span class="acct-type-badge badge-cc">信用卡</span>
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between">
+        ${isDue
+          ?`<span style="font-size:11px;color:var(--red)">⚠️ 帳單待繳${bill.due?' · 截止 '+bill.due:''}</span>
+            <button onclick="event.stopPropagation();markCCPaid('${p.id}')" style="font-size:10px;padding:3px 12px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;letter-spacing:0.08em">標記繳清</button>`
+          :`<span style="font-size:11px;color:var(--green)">✦ 已繳清</span><span style="font-size:10px;color:var(--text3)">點擊編輯</span>`
+        }
+      </div>
+      <div class="acct-balance-row">
+        <div class="acct-stat used"><div class="al">帳單${bill.status==='paid'?'（已繳）':''}</div><div class="av">${fmtN(billAmt)}</div></div>
+        <div class="acct-stat used"><div class="al">未出帳</div><div class="av">${fmtN(unbilled)}</div></div>
+        <div class="acct-stat avail"><div class="al">可用額度</div><div class="av">${fmtN(avail)}</div></div>
+      </div>
+      <div class="acct-prog">
+        <div class="pt"><span>額度已用 ${pct}%</span><span>總額度 ${fmtN(limit)}</span></div>
+        <div class="bar-track"><div class="budget-fill ${cls}" style="width:${pct}%"></div></div>
+      </div>
+      ${p.billingDay?`<div style="font-size:10px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)">
+        <span>本期刷卡記錄：${fmtN(autoUnbilled)}　推算未出帳：${fmtN(unbilled)}</span>
+      </div>`:''}
+    </div>`;
+  }).join('');
+
+  // 媽媽卡獨立統計
+  const momRecs=mr.filter(r=>r.isMom);
+  const momTotal=momRecs.reduce((s,r)=>s+r.amount,0);
+  const momHTML=`<div class="mom-summary-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${momRecs.length?'10px':'0'}">
+      <div><div style="font-size:13px;font-weight:600;color:var(--pink)">💗 媽媽卡本月消費</div><div style="font-size:11px;color:var(--text3);margin-top:2px">不計入個人總支出</div></div>
+      <div style="font-size:18px;font-weight:700;color:var(--pink)">${fmtN(momTotal)}</div>
+    </div>
+    ${momRecs.map(r=>`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:5px 0;border-bottom:1px solid rgba(176,96,128,0.15)">
+      <span>${r.catIcon} ${r.item||r.catLabel} <span style="color:var(--text3)">${r.date}</span></span>
+      <span style="color:var(--pink);font-weight:600">-${fmtN(r.amount)}</span>
+    </div>`).join('')}
+    ${momRecs.length===0?'<div style="font-size:12px;color:var(--text3)">本月尚無媽媽卡消費</div>':''}
+  </div>`;
+
+  const activeInst=installments.filter(inst=>instIsActive(inst,viewYear,viewMonth));
+  const instHTML=activeInst.length===0
+    ?'<div style="color:var(--text3);font-size:13px">本月無進行中的分期</div>'
+    :activeInst.map(inst=>{
+      const done=instDoneCount(inst,viewYear,viewMonth);
+      const remain=(inst.total-done)*inst.monthly;
+      const isPink=inst.type==='transfer';
+      const bubbles=Array.from({length:inst.total},(_,i)=>{
+        const n=i+1;
+        const cls=n<done?'b-done':n===done?'b-cur':'b-fut';
+        return `<div class="bubble ${cls}">${n}</div>${i<inst.total-1?'<div class="b-conn"></div>':''}`;
+      }).join('');
+      return `<div class="inst-card">
+        <button class="inst-del" onclick="deleteInst(${inst.id})">🗑</button>
+        <div class="inst-head">
+          <div><div class="inst-name">${inst.name}</div><div class="inst-sub">${inst.bank} ・ ${inst.total}期 ・ 結束${instEndLabel(inst)}</div></div>
+          <span class="${isPink?'inst-badge-pink':'inst-badge'}">第${done}/${inst.total}期</span>
+        </div>
+        <div class="bubbles">${bubbles}</div>
+        <div class="inst-footer">
+          <div class="inst-monthly">每月 <strong>${fmtN(inst.monthly)}</strong></div>
+          <div class="inst-remain"><div class="inst-remain-label">剩餘未還</div><div class="inst-remain-val">$ ${fmtN(remain)}</div></div>
+        </div>
+      </div>`;
+    }).join('');
+
+  const activeAdv=advances.filter(a=>advIsVisible(a));
+  const advTotal=activeAdv.reduce((s,a)=>s+(a.amount-a.paid),0);
+  const advHTML=activeAdv.length===0
+    ?'<div style="color:var(--text3);font-size:13px">目前無待收代墊款 🎉</div>'
+    :activeAdv.map(a=>{
+      const remaining=a.amount-a.paid;
+      const pct=Math.round(a.paid/a.amount*100);
+      return `<div class="adv-item">
+        <button class="adv-del" onclick="deleteAdv(${a.id})">🗑</button>
+        <div class="adv-head"><div><div class="adv-person">👤 ${a.person}</div><div class="adv-detail">${a.item} ・ ${a.date}</div></div></div>
+        <div class="adv-amounts">
+          <div class="adv-stat"><div class="al">原始</div><div class="av" style="color:var(--text2)">${fmtN(a.amount)}</div></div>
+          <div class="adv-stat"><div class="al">已收</div><div class="av" style="color:var(--green)">${fmtN(a.paid)}</div></div>
+          <div class="adv-stat"><div class="al">待收</div><div class="av" style="color:var(--yellow)">${fmtN(remaining)}</div></div>
+        </div>
+        ${a.paid>0?`<div class="adv-prog"><div class="pt"><span>收款進度</span><span>${pct}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:var(--green)"></div></div></div>`:''}
+        <button class="adv-collect" onclick="openCollect(${a.id})">💛 收款</button>
+      </div>`;
+    }).join('');
+
+  const repayListHTML=monthRepay.length?`<div class="card-section">
+    <div class="card-section-head"><div class="card-h-left"><span class="card-h-no">NO.</span><span class="card-h-title">繳卡記錄</span><span class="card-h-en">Payments</span></div></div>
+    ${monthRepay.map(r=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <div><div style="font-weight:500">${r.ccLabel}</div><div style="font-size:11px;color:var(--text3)">${r.date} · 從 ${r.bankLabel}</div></div>
+      <div style="display:flex;align-items:center;gap:8px"><div style="color:var(--green);font-weight:600">-${fmtN(r.amount)}</div>
+      <button onclick="deleteRepay(${r.id})" style="background:none;border:none;cursor:pointer;color:var(--text3)">🗑</button></div>
+    </div>`).join('')}
+  </div>`:'';
+
+  el.innerHTML=`<div style="margin-top:10px">
+    <button onclick="openRepayModal()" style="width:100%;background:var(--red-bg);border:1px solid rgba(184,96,80,0.3);border-radius:var(--radius-sm);padding:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--red);margin-bottom:12px">💳 信用卡繳款</button>
+    <div class="section-label">Deposit Accounts</div>${bankHTML}
+    ${momHTML}
+    <div class="section-label">Credit Cards</div>${ccHTML}
+    <div class="card-section">
+      <div class="card-section-head"><div class="card-h-left"><span class="card-h-no">NO.</span><span class="card-h-title">分期追蹤</span><span class="card-h-en">Installments</span></div><button class="add-btn" onclick="openModal('inst-modal')">＋ Add</button></div>
+      ${instHTML}
+    </div>
+    <div class="card-section">
+      <div class="card-section-head"><div class="card-h-left"><span class="card-h-no">NO.</span><span class="card-h-title">代墊款</span><span class="card-h-en">Advance Tracking</span></div><button class="add-btn" style="color:var(--yellow);border-color:var(--yellow)" onclick="openModal('adv-modal')">＋ Add</button></div>
+      ${advHTML}
+      ${activeAdv.length>0?`<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding:8px 0 0;border-top:1px solid rgba(160,128,64,0.2);margin-top:8px"><span style="color:var(--yellow)">合計待收</span><span style="color:var(--yellow)">$ ${fmtN(advTotal)}</span></div>`:''}
+    </div>
+    ${repayListHTML}
+  </div>`;
+}
+
+// ====== CC REPAY ======
+function openRepayModal(){
+  repayDraft={ccId:null,bankId:null};
+  const today=new Date();
+  document.getElementById('repay-date').value=today.toISOString().slice(0,10);
+  document.getElementById('repay-amount').value='';
+  document.getElementById('repay-hint').textContent='';
+  document.getElementById('repay-cc-list').innerHTML=PAYMENTS.filter(p=>p.type==='cc').map(p=>{
+    const bill=settings.ccBill[p.id]||{};
+    return `<div class="pay-card" id="rcc-${p.id}" onclick="selRCC('${p.id}',${bill.amount||0})" style="display:flex;justify-content:space-between;align-items:center">
+      <div><div class="pn">${p.label}</div><div class="pb">帳單：<span style="color:var(--red);font-weight:600">${fmtN(bill.amount||0)}</span></div></div>
+    </div>`;
+  }).join('');
+  const bankOpts=[...PAYMENTS.filter(p=>p.type==='bank'),{id:'other_pay',label:'其他',type:'other'}];
+  document.getElementById('repay-bank-list').innerHTML=bankOpts.map(p=>`
+    <div class="pay-card" id="rbk-${p.id}" onclick="selRBK('${p.id}')" style="text-align:center">
+      <div class="pn" style="font-size:12px">${p.label}</div>
+      <div class="pb">${p.type==='other'?'—':fmtN(settings.bankBalance[p.id]||0)}</div>
+    </div>`).join('');
+  openModal('repay-modal');
+}
+function selRCC(id,owed){
+  repayDraft.ccId=id;
+  document.querySelectorAll('[id^="rcc-"]').forEach(e=>e.classList.remove('selected'));
+  document.getElementById('rcc-'+id).classList.add('selected');
+  document.getElementById('repay-hint').textContent=`帳單金額：$ ${fmtN(owed)}`;
+}
+function selRBK(id){
+  repayDraft.bankId=id;
+  document.querySelectorAll('[id^="rbk-"]').forEach(e=>e.classList.remove('selected'));
+  document.getElementById('rbk-'+id).classList.add('selected');
+}
+function fillFullRepay(){
+  if(!repayDraft.ccId){showToast('請先選擇信用卡');return;}
+  document.getElementById('repay-amount').value=Math.round(settings.ccBill[repayDraft.ccId]?.amount||0);
+}
+function submitRepay(){
+  if(!repayDraft.ccId){showToast('請選擇信用卡');return;}
+  if(!repayDraft.bankId){showToast('請選擇扣款帳戶');return;}
+  const amount=parseFloat(document.getElementById('repay-amount').value);
+  if(!amount||amount<=0){showToast('請輸入金額');return;}
+  const date=document.getElementById('repay-date').value;
+  const cc=PAYMENTS.find(p=>p.id===repayDraft.ccId);
+  const bk=PAYMENTS.find(p=>p.id===repayDraft.bankId);
+  repayments.push({id:Date.now(),ccId:repayDraft.ccId,bankId:repayDraft.bankId,amount,date,ccLabel:cc?.label,bankLabel:bk?.label});
+  if(settings.ccBill[repayDraft.ccId]){settings.ccBill[repayDraft.ccId].status='paid';settings.ccBill[repayDraft.ccId].label='已繳清';}
+  saveAll();closeModal('repay-modal');updateAll();
+  showToast(`✅ 已繳款 ${fmt(amount)}`);
+}
+function deleteRepay(id){repayments=repayments.filter(r=>r.id!==id);saveAll();updateAll();showToast('已刪除');}
+
+// ====== INST ======
+function selInstTotal(n,el){
+  document.querySelectorAll('#inst-modal .choice-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');if(n>0)document.getElementById('inst-total').value=n;
+}
+function selInstType(t,el){
+  instType=t;
+  document.querySelectorAll('#inst-modal .choice-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function submitInst(){
+  const name=document.getElementById('inst-name').value.trim();
+  const bank=document.getElementById('inst-bank').value.trim();
+  const monthly=parseFloat(document.getElementById('inst-monthly').value);
+  const total=parseInt(document.getElementById('inst-total').value);
+  const year=parseInt(document.getElementById('inst-year').value);
+  const month=parseInt(document.getElementById('inst-month-sel').value);
+  if(!name||!monthly||!total||!year){showToast('請填寫完整資訊');return;}
+  installments.push({id:Date.now(),name,bank,monthly,total,startYear:year,startMonth:month,type:instType});
+  saveAll();closeModal('inst-modal');renderAccounts();showToast('✅ 已新增分期');
+}
+function deleteInst(id){if(!confirm('確定刪除？'))return;installments=installments.filter(i=>i.id!==id);saveAll();renderAccounts();showToast('已刪除');}
+
+// ====== ADVANCE ======
+function submitAdv(){
+  const person=document.getElementById('adv-person').value.trim();
+  const item=document.getElementById('adv-item').value.trim();
+  const amount=parseFloat(document.getElementById('adv-amount').value);
+  const date=document.getElementById('adv-date').value;
+  if(!person||!item||!amount||!date){showToast('請填寫完整資訊');return;}
+  advances.push({id:Date.now(),person,item,amount,date,paid:0});
+  saveAll();closeModal('adv-modal');renderAccounts();showToast('✅ 已新增代墊款');
+}
+function deleteAdv(id){if(!confirm('確定刪除？'))return;advances=advances.filter(a=>a.id!==id);saveAll();renderAccounts();showToast('已刪除');}
+function openCollect(id){
+  collectTargetId=id;
+  const a=advances.find(x=>x.id===id);
+  document.getElementById('collect-info').textContent=`${a.person} · ${a.item} · 待收 $ ${fmtN(a.amount-a.paid)}`;
+  document.getElementById('collect-amount').value='';
+  openModal('collect-modal');
+}
+function fillFullCollect(){const a=advances.find(x=>x.id===collectTargetId);if(a)document.getElementById('collect-amount').value=Math.round(a.amount-a.paid);}
+function submitCollect(){
+  const amount=parseFloat(document.getElementById('collect-amount').value);
+  if(!amount||amount<=0){showToast('請輸入金額');return;}
+  const idx=advances.findIndex(a=>a.id===collectTargetId);
+  if(idx>=0)advances[idx].paid=Math.min(advances[idx].amount,advances[idx].paid+amount);
+  saveAll();closeModal('collect-modal');renderAccounts();
+  showToast(`✅ 已收款 ${fmt(amount)}`);
+}
+
+// ====== SETTINGS ======
+function renderSettings(){
+  const el=document.getElementById('settings-area');
+  el.innerHTML=`<div style="margin-top:10px">
+  <div class="setting-group">
+    <h3>帳戶與信用卡</h3>
+    <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="font-size:12px;color:var(--text2)">帳戶餘額、信用卡額度與帳單</div>
+      <div style="font-size:11px;color:var(--text3)">請至「帳戶」頁面點擊各卡片進行編輯</div>
+    </div>
+  </div>
+  <div class="setting-group">
+    <h3>月預算設定</h3>
+    ${Object.entries(settings.budgets).map(([k,v])=>{
+      const cat=CATS.expense.find(c=>c.id===k);
+      return `<div class="setting-row"><label>${cat?.icon||'📦'} ${cat?.label||k}</label><input type="number" id="bgt-${k}" value="${v}"></div>`;
+    }).join('')}
+  </div>
+  <button class="setting-save" onclick="saveSettings()">✦ 儲存設定</button>
+
+  <div class="setting-group" style="margin-top:16px">
+    <h3>匯出資料</h3>
+    <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:10px">
+      <div style="font-size:12px;color:var(--text2);line-height:1.8">
+        將所有記帳記錄匯出為 Excel 檔案<br>
+        <span style="color:var(--text3);font-size:11px">包含日期、類型、分類、金額、付款方式等</span>
+      </div>
+      <button onclick="exportExcel()" style="background:var(--gold);color:#fdfaf6;border:none;padding:10px 24px;font-size:10px;font-weight:500;cursor:pointer;font-family:inherit;letter-spacing:0.18em;text-transform:uppercase;border-radius:var(--radius)">
+        ↓ 匯出 Excel
+      </button>
+    </div>
+  </div>
+  </div>`;
+}
+function saveSettings(){
+  // 帳戶與信用卡改在帳戶頁編輯
+  Object.keys(settings.budgets).forEach(k=>{settings.budgets[k]=parseInt(document.getElementById('bgt-'+k).value)||0;});
+  saveAll();updateAll();showToast('✅ 設定已儲存');
+}
+
+
+// ====== EXCEL 匯出 ======
+function exportExcel(){
+  if(typeof XLSX==='undefined'){showToast('載入中，請稍後再試');return;}
+  if(!records||records.length===0){showToast('尚無記帳記錄');return;}
+
+  const wb = XLSX.utils.book_new();
+
+  // ── 全部記錄工作表 ──
+  const typeLabel={expense:'支出',income:'收入',subscription:'訂閱',advance:'代墊',mom:'媽媽卡',saving:'儲蓄',invest:'投資'};
+  const payLabel={kaiji:'凱基銀行',ctbc_b:'中信活期',cathay_b:'國泰CUBE存款',linepay_m:'LINE Pay',cash:'現金',mom_card:'媽媽卡',ctbc_cc:'中信信用卡',taishin:'台新 Richart',cathay_cc:'國泰CUBE卡',other_pay:'其他'};
+
+  const allRows = [
+    ['日期','類型','分類','項目','金額','付款方式','備註','媽媽卡','代墊款','代墊對象','婚禮']
+  ];
+  const sorted = [...records].sort((a,b)=>a.date.localeCompare(b.date));
+  sorted.forEach(r=>{
+    allRows.push([
+      r.date,
+      typeLabel[r.type]||r.type,
+      r.catLabel||r.cat,
+      r.item||'',
+      r.amount||0,
+      payLabel[r.payment]||r.payment||'',
+      r.note||'',
+      r.isMom?'是':'',
+      r.tags?.adv?'是':'',
+      r.advPerson||'',
+      r.tags?.wed?'是':'',
+    ]);
+  });
+
+  const ws_all = XLSX.utils.aoa_to_sheet(allRows);
+  // 欄位寬度
+  ws_all['!cols']=[{wch:12},{wch:8},{wch:12},{wch:20},{wch:10},{wch:14},{wch:16},{wch:8},{wch:8},{wch:10},{wch:8}];
+  XLSX.utils.book_append_sheet(wb, ws_all, '全部記錄');
+
+  // ── 按月份分工作表 ──
+  const byMonth={};
+  sorted.forEach(r=>{
+    const key=r.date.slice(0,7); // YYYY-MM
+    if(!byMonth[key])byMonth[key]=[];
+    byMonth[key].push(r);
+  });
+
+  Object.entries(byMonth).sort().forEach(([ym,recs])=>{
+    const label=ym.replace('-','年')+'月';
+    const rows=[['日期','類型','分類','項目','金額','付款方式','備註']];
+    recs.forEach(r=>{
+      rows.push([r.date,typeLabel[r.type]||r.type,r.catLabel||r.cat,r.item||'',r.amount||0,payLabel[r.payment]||r.payment||'',r.note||'']);
+    });
+    // 加月份合計
+    const totalInc=recs.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
+    const totalExp=recs.filter(r=>['expense','subscription','advance'].includes(r.type)).reduce((s,r)=>s+r.amount,0);
+    rows.push([]);
+    rows.push(['','','','收入合計',totalInc,'','']);
+    rows.push(['','','','支出合計',totalExp,'','']);
+    rows.push(['','','','結餘',totalInc-totalExp,'','']);
+
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:12},{wch:8},{wch:12},{wch:20},{wch:10},{wch:14},{wch:16}];
+    XLSX.utils.book_append_sheet(wb, ws, label);
+  });
+
+  // ── 分期追蹤工作表 ──
+  if(installments&&installments.length>0){
+    const instRows=[['名稱','銀行/說明','每月金額','總期數','開始年月','結束年月','類型']];
+    installments.forEach(inst=>{
+      const em=inst.startMonth+inst.total-1;
+      const endLabel=`${inst.startYear+Math.floor(em/12)}年${(em%12)+1}月`;
+      instRows.push([inst.name,inst.bank,inst.monthly,inst.total,`${inst.startYear}年${inst.startMonth+1}月`,endLabel,inst.type==='transfer'?'每月轉帳':'信用卡分期']);
+    });
+    const ws_inst=XLSX.utils.aoa_to_sheet(instRows);
+    ws_inst['!cols']=[{wch:18},{wch:18},{wch:10},{wch:8},{wch:12},{wch:12},{wch:12}];
+    XLSX.utils.book_append_sheet(wb, ws_inst, '分期追蹤');
+  }
+
+  // ── 固定支出工作表 ──
+  if(fixedItems&&fixedItems.length>0){
+    const cycleLabel={monthly:'每月',quarterly:'每季',yearly:'每年',other:'其他'};
+    const fixRows=[['名稱','金額','週期','備註','狀態']];
+    fixedItems.forEach(f=>{
+      fixRows.push([f.name,f.amount,cycleLabel[f.cycle]||f.cycle,f.note||'',f.active?'啟用':'停用']);
+    });
+    const ws_fix=XLSX.utils.aoa_to_sheet(fixRows);
+    ws_fix['!cols']=[{wch:16},{wch:10},{wch:8},{wch:16},{wch:8}];
+    XLSX.utils.book_append_sheet(wb, ws_fix, '固定支出');
+  }
+
+  // 下載
+  const today=new Date();
+  const fname=`H&L記帳_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}.xlsx`;
+  XLSX.writeFile(wb, fname);
+  showToast('✅ Excel 已匯出');
+}
+
+
+
+// ====== 信用卡自動計算 ======
+function getCCBillingPeriod(card, refDate) {
+  // 根據結帳日計算當期帳單區間
+  // 例：結帳日25 → 上月26日 ~ 本月25日
+  const d = refDate || new Date();
+  const billingDay = card.billingDay || 25;
+  let periodStart, periodEnd;
+
+  if(d.getDate() <= billingDay) {
+    // 本月結帳日還沒到：上月(billingDay+1)日 ~ 本月billingDay日
+    periodEnd = new Date(d.getFullYear(), d.getMonth(), billingDay);
+    periodStart = new Date(d.getFullYear(), d.getMonth()-1, billingDay+1);
+  } else {
+    // 本月結帳日已過：本月(billingDay+1)日 ~ 下月billingDay日
+    periodEnd = new Date(d.getFullYear(), d.getMonth()+1, billingDay);
+    periodStart = new Date(d.getFullYear(), d.getMonth(), billingDay+1);
+  }
+  return {start: periodStart, end: periodEnd};
+}
+
+function getLastBillingPeriod(card, refDate) {
+  // 上一個已結帳的帳單區間
+  const d = refDate || new Date();
+  const billingDay = card.billingDay || 25;
+  let periodStart, periodEnd;
+
+  if(d.getDate() <= billingDay) {
+    // 上月結帳
+    periodEnd = new Date(d.getFullYear(), d.getMonth()-1, billingDay);
+    periodStart = new Date(d.getFullYear(), d.getMonth()-2, billingDay+1);
+  } else {
+    // 本月剛結帳
+    periodEnd = new Date(d.getFullYear(), d.getMonth(), billingDay);
+    periodStart = new Date(d.getFullYear(), d.getMonth()-1, billingDay+1);
+  }
+  return {start: periodStart, end: periodEnd};
+}
+
+function calcCCUnbilled(cardId) {
+  // 計算未出帳：當期帳單區間內，用這張卡的消費
+  const card = (settings.cards||[]).find(cc=>cc.id===cardId);
+  if(!card || !card.billingDay) {
+    // 沒有結帳日設定：回傳手動設定的值
+    return settings.ccUnbilled[cardId]||0;
+  }
+  const period = getCCBillingPeriod(card);
+  const total = records.filter(r=>{
+    if(r.payment !== cardId) return false;
+    if(r.isMom) return false;
+    const rd = new Date(r.date+'T12:00:00');
+    return rd >= period.start && rd <= period.end;
+  }).reduce((s,r)=>s+r.amount, 0);
+  return Math.round(total);
+}
+
+function calcCCBillAmount(cardId) {
+  // 計算上期帳單金額（上期結帳日區間的消費）
+  const card = (settings.cards||[]).find(cc=>cc.id===cardId);
+  if(!card || !card.billingDay) return settings.ccBill[cardId]?.amount||0;
+  const period = getLastBillingPeriod(card);
+  const total = records.filter(r=>{
+    if(r.payment !== cardId) return false;
+    if(r.isMom) return false;
+    const rd = new Date(r.date+'T12:00:00');
+    return rd >= period.start && rd <= period.end;
+  }).reduce((s,r)=>s+r.amount, 0);
+  return Math.round(total);
+}
+
+function isBillingDay(card) {
+  // 今天是否是結帳日
+  const today = new Date();
+  return card.billingDay && today.getDate() === card.billingDay;
+}
+
+function getDueDateLabel(card) {
+  const today = new Date();
+  const billingDay = card.billingDay;
+  const dueDay = card.dueDay;
+  if(!billingDay) return '';
+
+  // 計算下次繳款截止日
+  let dueStr = '';
+  if(card.fixedDue) {
+    dueStr = card.fixedDue; // 台新這種固定截止日
+  } else if(dueDay) {
+    // 結帳日後的下一個月 dueDay
+    let dm = today.getDate() <= billingDay ? today.getMonth() : today.getMonth()+1;
+    let dy = today.getFullYear();
+    if(dm > 11){dm=0;dy++;}
+    dueStr = `${String(dm+1).padStart(2,'0')}/${String(dueDay).padStart(2,'0')}`;
+  }
+  return `每月${billingDay}日結帳 · ${dueStr?dueStr+'繳款':''}`;
+}
+
+function markCCPaid(cardId) {
+  if(!settings.ccBill[cardId]) settings.ccBill[cardId]={};
+  settings.ccBill[cardId].status = 'paid';
+  settings.ccBill[cardId].paidAt = new Date().toISOString();
+  saveAll();
+  renderAccounts();
+  showToast('✅ 已標記繳清');
+}
+
+// ====== 帳戶管理 ======
+let _cardStatus = 'paid';
+
+function getAccounts(){ return settings.accounts || []; }
+function getCards(){ return settings.cards || []; }
+
+function openAddAccount(){
+  document.getElementById('acct-modal-title').textContent = '新增帳戶';
+  document.getElementById('acct-edit-id').value = '';
+  document.getElementById('acct-name-inp').value = '';
+  document.getElementById('acct-bal-inp').value = '';
+  document.getElementById('acct-updated-inp').value = '';
+  document.getElementById('acct-delete-wrap').style.display = 'none';
+  openModal('acct-modal');
+}
+
+function openEditAccount(id){
+  const acct = getAccounts().find(a=>a.id===id);
+  if(!acct) return;
+  document.getElementById('acct-modal-title').textContent = '編輯帳戶';
+  document.getElementById('acct-edit-id').value = id;
+  document.getElementById('acct-name-inp').value = acct.label;
+  document.getElementById('acct-bal-inp').value = settings.bankBalance[id]||0;
+  document.getElementById('acct-updated-inp').value = acct.updated||'';
+  document.getElementById('acct-delete-wrap').style.display = 'block';
+  openModal('acct-modal');
+}
+
+function saveAccount(){
+  const id = document.getElementById('acct-edit-id').value;
+  const label = document.getElementById('acct-name-inp').value.trim();
+  const bal = parseFloat(document.getElementById('acct-bal-inp').value)||0;
+  const updated = document.getElementById('acct-updated-inp').value.trim();
+  if(!label){showToast('請輸入帳戶名稱');return;}
+  if(!settings.accounts) settings.accounts=[];
+  if(!settings.bankBalance) settings.bankBalance={};
+  if(id){
+    // 編輯
+    const idx = settings.accounts.findIndex(a=>a.id===id);
+    if(idx>=0){
+      settings.accounts[idx].label = label;
+      settings.accounts[idx].updated = updated;
+    }
+    settings.bankBalance[id] = bal;
+  } else {
+    // 新增
+    const newId = 'acct_' + Date.now();
+    settings.accounts.push({id:newId, label, updated});
+    settings.bankBalance[newId] = bal;
+    // 同步加入 PAYMENTS
+    PAYMENTS.push({id:newId, label, type:'bank', updated});
+  }
+  // 同步更新 PAYMENTS label
+  const acct = settings.accounts.find(a=>a.id===id);
+  if(acct){
+    const pi = PAYMENTS.findIndex(p=>p.id===id);
+    if(pi>=0) PAYMENTS[pi].label = label;
+  }
+  saveAll(); closeModal('acct-modal'); renderAccounts(); showToast('✅ 已儲存');
+}
+
+function deleteAccount(){
+  const id = document.getElementById('acct-edit-id').value;
+  if(!id){return;}
+  if(!confirm('確定刪除此帳戶？')) return;
+  settings.accounts = (settings.accounts||[]).filter(a=>a.id!==id);
+  delete settings.bankBalance[id];
+  // 從 PAYMENTS 移除
+  const pi = PAYMENTS.findIndex(p=>p.id===id);
+  if(pi>=0) PAYMENTS.splice(pi,1);
+  saveAll(); closeModal('acct-modal'); renderAccounts(); showToast('已刪除');
+}
+
+// ====== 信用卡管理 ======
+function selCardStatus(s, el){
+  _cardStatus = s;
+  document.querySelectorAll('#card-modal .choice-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function openAddCard(){
+  document.getElementById('card-modal-title').textContent = '新增信用卡';
+  document.getElementById('card-edit-id').value = '';
+  document.getElementById('card-name-inp').value = '';
+  document.getElementById('card-limit-inp').value = '';
+  document.getElementById('card-unbilled-inp').value = '';
+  document.getElementById('card-avail-inp').value = '';
+  document.getElementById('card-bill-inp').value = '';
+  document.getElementById('card-billing-day-inp').value = '';
+  document.getElementById('card-due-day-inp').value = '';
+  document.getElementById('card-due-date-inp').value = '';
+  document.getElementById('card-delete-wrap').style.display = 'none';
+  _cardStatus = 'paid';
+  document.getElementById('card-status-paid').classList.add('selected');
+  document.getElementById('card-status-due').classList.remove('selected');
+  openModal('card-modal');
+}
+
+function openEditCard(id){
+  const card = getCards().find(cc=>cc.id===id);
+  if(!card) return;
+  document.getElementById('card-modal-title').textContent = '編輯信用卡';
+  document.getElementById('card-edit-id').value = id;
+  document.getElementById('card-name-inp').value = card.label;
+  document.getElementById('card-limit-inp').value = settings.ccLimit[id]||0;
+  // 未出帳顯示推算值（總額度-可用-帳單）
+  const avail0 = (settings.ccAvail && settings.ccAvail[id] > 0) ? settings.ccAvail[id] : 0;
+  const bill0 = settings.ccBill[id]||{};
+  const billAmt0 = bill0.status==='paid' ? 0 : (bill0.manualAmount||bill0.amount||0);
+  const inferredUnbilled = avail0 > 0 ? Math.max(0, (settings.ccLimit[id]||0) - avail0 - billAmt0) : (settings.ccUnbilled[id]||0);
+  document.getElementById('card-unbilled-inp').value = inferredUnbilled;
+  document.getElementById('card-avail-inp').value = (settings.ccAvail&&settings.ccAvail[id])||0;
+  const bill = settings.ccBill[id]||{};
+  // 顯示手動覆蓋的帳單金額（如有），否則顯示自動計算
+  const autoBill = card.billingDay ? calcCCBillAmount(id) : bill.amount||0;
+  document.getElementById('card-bill-inp').value = bill.manualAmount!=null ? bill.manualAmount : autoBill;
+  document.getElementById('card-billing-day-inp').value = card.billingDay||'';
+  document.getElementById('card-due-day-inp').value = card.dueDay||'';
+  document.getElementById('card-due-date-inp').value = bill.due||'';
+  document.getElementById('card-delete-wrap').style.display = 'block';
+  _cardStatus = bill.status||'paid';
+  document.getElementById('card-status-paid').classList.toggle('selected', _cardStatus==='paid');
+  document.getElementById('card-status-due').classList.toggle('selected', _cardStatus==='due');
+  // 顯示自動計算提示
+  const hint = document.getElementById('card-bill-hint');
+  if(hint) { hint.textContent = card.billingDay ? `自動計算：${fmtN(autoBill)}（可手動覆蓋）` : ''; }
+  openModal('card-modal');
+}
+
+function saveCard(){
+  const id = document.getElementById('card-edit-id').value;
+  const label = document.getElementById('card-name-inp').value.trim();
+  const limit = parseFloat(document.getElementById('card-limit-inp').value)||0;
+  const unbilled = parseFloat(document.getElementById('card-unbilled-inp').value)||0;
+  const avail = parseFloat(document.getElementById('card-avail-inp').value)||(limit-unbilled);
+  const billAmt = parseFloat(document.getElementById('card-bill-inp').value)||0;
+  const billingDay = parseInt(document.getElementById('card-billing-day-inp').value)||null;
+  const dueDay = parseInt(document.getElementById('card-due-day-inp').value)||null;
+  const due = document.getElementById('card-due-date-inp').value.trim();
+  if(!label){showToast('請輸入卡片名稱');return;}
+  if(!settings.cards) settings.cards=[];
+  if(!settings.ccLimit) settings.ccLimit={};
+  if(!settings.ccUnbilled) settings.ccUnbilled={};
+  if(!settings.ccAvail) settings.ccAvail={};
+  if(!settings.ccBill) settings.ccBill={};
+
+  // 建立 label 文字
+  let billLabel = '';
+  if(billingDay && dueDay) billLabel = `每月${billingDay}日結帳 · ${dueDay}日扣繳`;
+  else if(dueDay) billLabel = `繳款截止 ${due}`;
+  else if(due) billLabel = `繳款截止 ${due}`;
+
+  const card = id ? getCards().find(cc=>cc.id===id) : null;
+  if(id){
+    // 編輯
+    const idx = settings.cards.findIndex(cc=>cc.id===id);
+    if(idx>=0){ settings.cards[idx]={...settings.cards[idx], label, billingDay, dueDay}; }
+    const pi = PAYMENTS.findIndex(p=>p.id===id);
+    if(pi>=0) PAYMENTS[pi].label = label;
+  } else {
+    // 新增
+    const newId = 'card_' + Date.now();
+    settings.cards.push({id:newId, label, billingDay, dueDay});
+    settings.ccLimit[id||newId] = limit;
+    settings.ccUnbilled[id||newId] = unbilled;
+    settings.ccAvail[id||newId] = avail;
+    settings.ccBill[id||newId] = {amount:billAmt, status:_cardStatus, label:billLabel, due};
+    PAYMENTS.push({id:newId, label, type:'cc'});
+    saveAll(); closeModal('card-modal'); renderAccounts(); showToast('✅ 已新增'); return;
+  }
+  settings.ccLimit[id] = limit;
+  settings.ccUnbilled[id] = unbilled;
+  settings.ccAvail[id] = avail;
+  const prevBill = settings.ccBill[id]||{};
+  // 判斷是否手動覆蓋（和自動計算不同）
+  const autoBillCheck = card ? calcCCBillAmount(id) : billAmt;
+  const isManual = Math.round(billAmt) !== Math.round(autoBillCheck);
+  settings.ccBill[id] = {
+    amount:billAmt,
+    manualAmount: isManual ? billAmt : null,
+    status:_cardStatus,
+    label:billLabel,
+    due,
+    paidAt: _cardStatus==='paid' ? (prevBill.paidAt||new Date().toISOString()) : null
+  };
+  saveAll(); closeModal('card-modal'); renderAccounts(); showToast('✅ 已儲存');
+}
+
+function deleteCard(){
+  const id = document.getElementById('card-edit-id').value;
+  if(!id) return;
+  if(!confirm('確定刪除此信用卡？')) return;
+  settings.cards = (settings.cards||[]).filter(cc=>cc.id!==id);
+  delete settings.ccLimit[id];
+  delete settings.ccUnbilled[id];
+  if(settings.ccAvail) delete settings.ccAvail[id];
+  delete settings.ccBill[id];
+  const pi = PAYMENTS.findIndex(p=>p.id===id);
+  if(pi>=0) PAYMENTS.splice(pi,1);
+  saveAll(); closeModal('card-modal'); renderAccounts(); showToast('已刪除');
+}
+
+// ====== MODAL / NAV / TOAST ======
+function openModal(id){document.getElementById(id).classList.remove('hidden');}
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
+function switchPanel(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  if(name==='list')renderRecords();
+  if(name==='fixed')renderFixed();
+  if(name==='analysis')renderAnalysis();
+  if(name==='accounts')renderAccounts();
+  if(name==='settings')renderSettings();
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ====== INIT ======
+function init(){
+  load();
+  const today=new Date();
+  const wd='日一二三四五六';
+  document.getElementById('today-str').textContent=`${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日（週${wd[today.getDay()]}）`;
+  document.getElementById('inst-year').value=today.getFullYear();
+  document.getElementById('inst-month-sel').value=today.getMonth();
+  document.getElementById('adv-date').value=today.toISOString().slice(0,10);
+  buildYearSel();
+  document.getElementById('month-label').textContent=(viewMonth+1)+'月';
+  updateAll();
+  renderStep();
+}
+init();
+</script>
+
+
+</body>
+</html>
