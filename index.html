@@ -1133,7 +1133,7 @@ let settings={
   ],
 };
 
-let viewYear=2026, viewMonth=5;
+let viewYear=new Date().getFullYear(), viewMonth=new Date().getMonth();
 let step=0;
 let draft={type:null,cat:null,item:null,amount:'',payment:null,note:'',tags:{adv:false,wed:false},advPerson:''};
 let instType='normal', fxCycle='monthly';
@@ -1893,11 +1893,14 @@ function renderAccounts(){
     ${momRecs.length===0?'<div style="font-size:12px;color:var(--text3)">本月尚無媽媽卡消費</div>':''}
   </div>`;
 
-  const activeInst=installments.filter(inst=>instIsActive(inst,viewYear,viewMonth));
+  // 顯示所有進行中的分期（不限當月）
+  const today2=new Date();
+  const curY=today2.getFullYear(),curM=today2.getMonth();
+  const activeInst=installments.filter(inst=>instIsActive(inst,curY,curM));
   const instHTML=activeInst.length===0
-    ?'<div style="color:var(--text3);font-size:13px">本月無進行中的分期</div>'
+    ?'<div style="color:var(--text3);font-size:13px">目前無進行中的分期</div>'
     :activeInst.map(inst=>{
-      const done=instDoneCount(inst,viewYear,viewMonth);
+      const done=instDoneCount(inst,curY,curM);
       const remain=(inst.total-done)*inst.monthly;
       const isPink=inst.type==='transfer';
       const bubbles=Array.from({length:inst.total},(_,i)=>{
@@ -2100,6 +2103,28 @@ function renderSettings(){
       </button>
     </div>
   </div>
+  <div class="setting-group" style="margin-top:10px">
+    <h3>備份與還原</h3>
+    <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:10px">
+      <div style="font-size:12px;color:var(--text2);line-height:1.8">
+        匯出所有資料為 JSON 備份檔<br>
+        <span style="color:var(--text3);font-size:11px">包含記帳記錄、設定、分期、代墊款、固定支出</span>
+      </div>
+      <button onclick="exportJSON()" style="background:var(--gold);color:#fdfaf6;border:none;padding:10px 24px;font-size:10px;font-weight:500;cursor:pointer;font-family:inherit;letter-spacing:0.18em;text-transform:uppercase;border-radius:var(--radius)">
+        ↓ 匯出 JSON 備份
+      </button>
+    </div>
+    <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:10px;border-top:1px solid var(--border-light);padding-top:12px">
+      <div style="font-size:12px;color:var(--text2);line-height:1.8">
+        從 JSON 備份檔還原資料<br>
+        <span style="color:var(--text3);font-size:11px">⚠️ 會覆蓋現有所有資料，請謹慎操作</span>
+      </div>
+      <label style="background:var(--surface2);border:1px solid var(--border);padding:10px 24px;font-size:10px;font-weight:500;cursor:pointer;font-family:inherit;letter-spacing:0.18em;text-transform:uppercase;border-radius:var(--radius);color:var(--text2)">
+        ↑ 匯入 JSON 備份
+        <input type="file" accept=".json" onchange="importJSON(event)" style="display:none">
+      </label>
+    </div>
+  </div>
   </div>`;
 }
 function saveSettings(){
@@ -2108,6 +2133,61 @@ function saveSettings(){
   saveAll();updateAll();showToast('✅ 設定已儲存');
 }
 
+
+
+// ====== JSON 備份與還原 ======
+function exportJSON(){
+  const data = {
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    records,
+    repayments,
+    installments,
+    advances,
+    fixedItems,
+    settings,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date();
+  a.href = url;
+  a.download = `H&L記帳備份_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ JSON 備份已匯出');
+}
+
+function importJSON(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  if(!confirm('⚠️ 確定要匯入？這會覆蓋所有現有資料！')) {
+    event.target.value='';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      const data = JSON.parse(e.target.result);
+      if(!data.records) { showToast('❌ 格式錯誤，無法匯入'); return; }
+      records = data.records || [];
+      repayments = data.repayments || [];
+      installments = data.installments || [];
+      advances = data.advances || [];
+      fixedItems = data.fixedItems || [];
+      if(data.settings) Object.assign(settings, data.settings);
+      saveAll();
+      updateAll();
+      showToast('✅ 資料已還原！共 '+records.length+' 筆記錄');
+      // 重新渲染設定頁
+      renderSettings();
+    } catch(err) {
+      showToast('❌ 匯入失敗：' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
 
 // ====== EXCEL 匯出 ======
 function exportExcel(){
