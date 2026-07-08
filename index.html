@@ -1039,6 +1039,7 @@ const CATS={
     {id:'special',  label:'特別支出',icon:'✨', items:['婚禮','蜜月','旅遊','禮物','紀念日','其他（手動輸入）'],group:'personal'},
     {id:'studio',   label:'工作室設備',icon:'🖥️', items:['設備','軟體','Adobe','其他（手動輸入）'],group:'studio'},
     {id:'studio_other',label:'工作室雜支',icon:'📐', items:['材料','運費','其他（手動輸入）'],group:'studio'},
+    {id:'fixed_sub', label:'固定訂閱', icon:'📋', items:['__from_fixed__'],group:'personal'},
     {id:'other',    label:'其他',   icon:'📦', items:['考試費','紅包','其他（手動輸入）'],group:'personal'},
   ],
   income:[
@@ -1381,7 +1382,12 @@ function renderStep(){
   }else if(step===2){
     const cats=CATS[draft.type]||[];
     const cat=cats.find(c=>c.id===draft.cat);
-    const items=(cat?.items||[]);
+    let items=(cat?.items||[]);
+    // 固定訂閱：從 fixedItems 動態抓啟用的項目
+    if(draft.cat==='fixed_sub'){
+      const fixedNames=fixedItems.filter(f=>f.active).map(f=>f.name);
+      items=[...fixedNames,'其他（手動輸入）'];
+    }
     el.innerHTML=`<div class="step-title">Select Item · 選擇細項</div>
     <div class="grid-btns col2">${items.map(i=>{
       const isManual=i==='其他（手動輸入）';
@@ -1548,7 +1554,7 @@ const CAT_META={
   beauty:{label:'美容',icon:'💇'},entertainment:{label:'娛樂',icon:'🎬'},health:{label:'醫療',icon:'💊'},
   home:{label:'居家',icon:'🏠'},fuel:{label:'加油',icon:'⛽'},telecom:{label:'電信',icon:'📶'},
   special:{label:'特別支出',icon:'✨'},studio:{label:'工作室設備',icon:'🖥️'},studio_other:{label:'工作室雜支',icon:'📐'},
-  other:{label:'其他',icon:'📦'},work_salary:{label:'薪資',icon:'💼'},work_studio:{label:'工作室收入',icon:'🖥️'},
+  other:{label:'其他',icon:'📦'},fixed_sub:{label:'固定訂閱',icon:'📋'},work_salary:{label:'薪資',icon:'💼'},work_studio:{label:'工作室收入',icon:'🖥️'},
   invest_in:{label:'投資收益',icon:'📈'},gift:{label:'紅包',icon:'🧧'},transfer_in:{label:'轉入',icon:'🔄'},
   other_in:{label:'其他收入',icon:'💰'},video:{label:'影音',icon:'📺'},music:{label:'音樂',icon:'🎵'},
   ai_tool:{label:'AI工具',icon:'🤖'},cloud:{label:'雲端',icon:'☁️'},sw:{label:'軟體',icon:'💻'},
