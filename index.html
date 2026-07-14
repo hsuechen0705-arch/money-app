@@ -1737,15 +1737,20 @@ function renderAccounts(){
     <button class="add-btn" onclick="openAddAccount()">＋ 新增帳戶</button>
   </div>`+accounts.map(p=>{
     // 初始餘額 + 所有記帳收支（不限月份）
-    const initBal = (settings.initialBalance&&settings.initialBalance[p.id]!=null)
-      ? settings.initialBalance[p.id]
-      : (settings.bankBalance[p.id]||0);
-    const allInc=records.filter(r=>r.payment===p.id&&r.type==='income').reduce((s,r)=>s+r.amount,0);
-    const allExp=records.filter(r=>r.payment===p.id&&['expense','subscription','advance','mortgage'].includes(r.type)).reduce((s,r)=>s+r.amount,0);
-    // 如果有手動餘額覆蓋（比初始餘額更新），用手動的
-    const manualBal = settings.bankBalance[p.id];
-    const hasManual = manualBal != null && manualBal !== initBal;
-    const bal = hasManual ? manualBal : (initBal + allInc - allExp);
+    // 初始餘額（從 initialBalance 讀）
+    const hasInitBal = settings.initialBalance && settings.initialBalance[p.id] != null;
+    const initBal = hasInitBal ? settings.initialBalance[p.id] : null;
+    // 手動覆蓋餘額（從 bankBalance 讀，且有標記 manualSet）
+    const hasManual = settings.manualBalanceSet && settings.manualBalanceSet[p.id];
+    const manualBal = hasManual ? settings.bankBalance[p.id] : null;
+    // 計算：初始餘額 + 初始日期之後的收支
+    const initDate = (settings.initialBalanceDate && settings.initialBalanceDate[p.id]) || '2000-01-01';
+    const allInc = records.filter(r=>r.payment===p.id && r.type==='income' && r.date>=initDate).reduce((s,r)=>s+r.amount,0);
+    const allExp = records.filter(r=>r.payment===p.id && ['expense','subscription','advance','mortgage'].includes(r.type) && r.date>=initDate).reduce((s,r)=>s+r.amount,0);
+    const autoBal = hasInitBal ? initBal + allInc - allExp : null;
+    // 優先順序：手動覆蓋 > 自動計算 > bankBalance
+    const bal = hasManual ? manualBal : (autoBal !== null ? autoBal : (settings.bankBalance[p.id]||0));
+    const hasManualDisplay = hasManual;
     const mExp=mr.filter(r=>r.payment===p.id&&['expense','subscription','advance','mortgage'].includes(r.type)).reduce((s,r)=>s+r.amount,0);
     const mInc=mr.filter(r=>r.payment===p.id&&r.type==='income').reduce((s,r)=>s+r.amount,0);
     return `<div class="acct-card" onclick="openEditAccount('${p.id}')" style="cursor:pointer">
@@ -1754,7 +1759,7 @@ function renderAccounts(){
         <span class="acct-type-badge badge-bank">存款</span>
       </div>
       <div class="acct-balance-row">
-        <div class="acct-stat bal"><div class="al">餘額${hasManual?'（手動）':'（自動）'}</div><div class="av">${fmtN(bal)}</div></div>
+        <div class="acct-stat bal"><div class="al">餘額${hasManualDisplay?'（手動）':(hasInitBal?'（自動）':'')}</div><div class="av">${fmtN(bal)}</div></div>
         <div class="acct-stat used"><div class="al">本月支出</div><div class="av">${fmtN(mExp)}</div></div>
         <div class="acct-stat"><div class="al">本月收入</div><div class="av" style="color:var(--green)">${fmtN(mInc)}</div></div>
       </div>
@@ -2244,9 +2249,8 @@ function openEditAccount(id){
   document.getElementById('acct-name-inp').value = acct.label;
   const initB = (settings.initialBalance&&settings.initialBalance[id]!=null)?settings.initialBalance[id]:'';
   document.getElementById('acct-init-inp').value = initB;
-  const manB = settings.bankBalance[id];
-  const initBCheck = (settings.initialBalance&&settings.initialBalance[id]!=null)?settings.initialBalance[id]:null;
-  document.getElementById('acct-bal-inp').value = (manB != null && manB !== initBCheck) ? manB : '';
+  const isManSet = settings.manualBalanceSet && settings.manualBalanceSet[id];
+  document.getElementById('acct-bal-inp').value = isManSet ? (settings.bankBalance[id]||'') : '';
   document.getElementById('acct-updated-inp').value = acct.updated||'';
   document.getElementById('acct-delete-wrap').style.display = 'block';
   openModal('acct-modal');
@@ -2264,22 +2268,32 @@ function saveAccount(){
   if(!settings.accounts) settings.accounts=[];
   if(!settings.bankBalance) settings.bankBalance={};
   if(!settings.initialBalance) settings.initialBalance={};
+  if(!settings.initialBalanceDate) settings.initialBalanceDate={};
+  if(!settings.manualBalanceSet) settings.manualBalanceSet={};
+  const today3 = new Date().toISOString().slice(0,10);
   if(id){
-    // 編輯
     const idx = settings.accounts.findIndex(a=>a.id===id);
-    if(idx>=0){
-      settings.accounts[idx].label = label;
-      settings.accounts[idx].updated = updated;
+    if(idx>=0){ settings.accounts[idx].label=label; settings.accounts[idx].updated=updated; }
+    if(initBal !== null){
+      settings.initialBalance[id] = initBal;
+      settings.initialBalanceDate[id] = today3; // 記錄設定初始餘額的日期
     }
-    if(initBal !== null) settings.initialBalance[id] = initBal;
-    if(bal !== null) settings.bankBalance[id] = bal;
-    else settings.bankBalance[id] = settings.initialBalance[id]||0; // 清空手動 = 用初始
+    if(bal !== null){
+      settings.bankBalance[id] = bal;
+      settings.manualBalanceSet[id] = true; // 標記為手動覆蓋
+    } else {
+      settings.manualBalanceSet[id] = false; // 清空 = 回自動計算
+    }
   } else {
     // 新增
     const newId = 'acct_' + Date.now();
     settings.accounts.push({id:newId, label, updated});
-    if(initBal !== null) settings.initialBalance[newId] = initBal;
+    if(initBal !== null){
+      settings.initialBalance[newId] = initBal;
+      settings.initialBalanceDate[newId] = today3;
+    }
     settings.bankBalance[newId] = initBal||0;
+    if(bal !== null){ settings.bankBalance[newId]=bal; settings.manualBalanceSet[newId]=true; }
     // 同步加入 PAYMENTS
     PAYMENTS.push({id:newId, label, type:'bank', updated});
   }
