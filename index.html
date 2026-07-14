@@ -704,10 +704,17 @@ body{
       </select>
     </div>
     <div class="modal-label">類型</div>
-    <div style="display:flex;gap:7px">
+    <div style="display:flex;gap:7px;margin-bottom:8px">
       <button class="choice-btn selected" id="inst-type-normal" onclick="selInstType('normal',this)">💳 信用卡分期</button>
       <button class="choice-btn" id="inst-type-transfer" onclick="selInstType('transfer',this)">🔄 每月轉帳</button>
     </div>
+    <div class="modal-label">綁定信用卡（分期占額用）</div>
+    <select class="text-inp" id="inst-cc-sel" style="cursor:pointer;margin-bottom:0">
+      <option value="">-- 不綁定 --</option>
+      <option value="ctbc_cc">中信信用卡</option>
+      <option value="taishin">台新 Richart</option>
+      <option value="cathay_cc">國泰CUBE卡</option>
+    </select>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('inst-modal')">取消</button>
       <button class="btn-confirm" onclick="submitInst()">✅ 新增</button>
@@ -960,8 +967,10 @@ body{
     <input type="hidden" id="acct-edit-id">
     <div class="modal-label">帳戶名稱</div>
     <input type="text" class="text-inp" id="acct-name-inp" placeholder="例：凱基銀行、現金">
-    <div class="modal-label">目前餘額</div>
-    <input type="number" class="text-inp" id="acct-bal-inp" placeholder="0">
+    <div class="modal-label">初始餘額（設定後自動計算）</div>
+    <input type="number" class="text-inp" id="acct-init-inp" placeholder="0">
+    <div class="modal-label">手動覆蓋餘額（填入後優先使用，清空則回自動計算）</div>
+    <input type="number" class="text-inp" id="acct-bal-inp" placeholder="留空 = 自動計算">
     <div class="modal-label">更新日期標記（選填）</div>
     <input type="text" class="text-inp" id="acct-updated-inp" placeholder="例：06/22">
     <div id="acct-delete-wrap" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light)">
@@ -1075,6 +1084,7 @@ let records=[], repayments=[], installments=[], advances=[], fixedItems=[];
 let settings={
   budgets:{food:8000,transport:8000,shopping:6000,beauty:3000,entertainment:2000,health:2000,home:5000,fuel:5000,telecom:1200,special:0,studio:0,other:2000},
   bankBalance:{kaiji:36971,ctbc_b:726,cathay_b:1829,linepay_m:2524,cash:1446},
+  initialBalance:{kaiji:36971,ctbc_b:726,cathay_b:1829,linepay_m:2524,cash:1446},  // 初始餘額
   ccLimit:{ctbc_cc:200000,taishin:150000,cathay_cc:60000},
   ccUnbilled:{ctbc_cc:49272,taishin:74111,cathay_cc:19218},
   ccBill:{
@@ -1094,10 +1104,10 @@ let repayDraft={ccId:null,bankId:null};
 
 // ====== DEFAULTS ======
 const defaultInst=[
-  {id:1,name:'👜 YSL 包包',bank:'中信 台北101卡',monthly:7808,total:6,startYear:2026,startMonth:3,type:'normal'},
-  {id:2,name:'💍 鑽戒',   bank:'中信 中華航空聯名卡',monthly:6900,total:6,startYear:2026,startMonth:3,type:'normal'},
-  {id:3,name:'💛 卡地亞', bank:'每月轉帳給男友',monthly:5350,total:6,startYear:2026,startMonth:3,type:'transfer'},
-  {id:4,name:'✈️ 華航巴黎機票',bank:'台新 Richart 5202',monthly:2090,total:30,startYear:2026,startMonth:5,type:'normal'},
+  {id:1,name:'👜 YSL 包包',bank:'中信 台北101卡',monthly:7808,total:6,startYear:2026,startMonth:3,type:'normal',ccId:'ctbc_cc'},
+  {id:2,name:'💍 鑽戒',   bank:'中信 中華航空聯名卡',monthly:6900,total:6,startYear:2026,startMonth:3,type:'normal',ccId:'ctbc_cc'},
+  {id:3,name:'💛 卡地亞', bank:'每月轉帳給男友',monthly:5350,total:6,startYear:2026,startMonth:3,type:'transfer',ccId:null},
+  {id:4,name:'✈️ 華航巴黎機票',bank:'台新 Richart 5202',monthly:2090,total:30,startYear:2026,startMonth:5,type:'normal',ccId:'taishin'},
 ];
 const defaultAdv=[
   {id:1,person:'姐姐',item:'新加坡商保養品分期',amount:13335,date:'2026-05-28',paid:0},
@@ -1186,6 +1196,14 @@ function load(){
   try{repayments=JSON.parse(localStorage.getItem('xz3_repay')||'[]');}catch(e){}
   try{const s=JSON.parse(localStorage.getItem('xz3_settings'));if(s)settings=Object.assign(settings,s);}catch(e){}
   try{installments=JSON.parse(localStorage.getItem('xz3_inst')||JSON.stringify(defaultInst));}catch(e){installments=defaultInst;}
+  // 強制同步 defaultInst 的 ccId 到既有分期
+  defaultInst.forEach(di=>{
+    const idx=installments.findIndex(i=>i.id===di.id);
+    if(idx>=0 && di.ccId !== undefined){
+      installments[idx].ccId = di.ccId;
+    }
+  });
+  localStorage.setItem('xz3_inst', JSON.stringify(installments));
   // 強制合併新預設分期
   const instIds=new Set(installments.map(i=>i.id));
   const newInsts=defaultInst.filter(i=>!instIds.has(i.id));
@@ -1718,8 +1736,17 @@ function renderAccounts(){
   const bankHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px">
     <button class="add-btn" onclick="openAddAccount()">＋ 新增帳戶</button>
   </div>`+accounts.map(p=>{
-    const bal=settings.bankBalance[p.id]||0;
-    const mExp=mr.filter(r=>r.payment===p.id&&['expense','subscription','advance'].includes(r.type)).reduce((s,r)=>s+r.amount,0);
+    // 初始餘額 + 所有記帳收支（不限月份）
+    const initBal = (settings.initialBalance&&settings.initialBalance[p.id]!=null)
+      ? settings.initialBalance[p.id]
+      : (settings.bankBalance[p.id]||0);
+    const allInc=records.filter(r=>r.payment===p.id&&r.type==='income').reduce((s,r)=>s+r.amount,0);
+    const allExp=records.filter(r=>r.payment===p.id&&['expense','subscription','advance','mortgage'].includes(r.type)).reduce((s,r)=>s+r.amount,0);
+    // 如果有手動餘額覆蓋（比初始餘額更新），用手動的
+    const manualBal = settings.bankBalance[p.id];
+    const hasManual = manualBal != null && manualBal !== initBal;
+    const bal = hasManual ? manualBal : (initBal + allInc - allExp);
+    const mExp=mr.filter(r=>r.payment===p.id&&['expense','subscription','advance','mortgage'].includes(r.type)).reduce((s,r)=>s+r.amount,0);
     const mInc=mr.filter(r=>r.payment===p.id&&r.type==='income').reduce((s,r)=>s+r.amount,0);
     return `<div class="acct-card" onclick="openEditAccount('${p.id}')" style="cursor:pointer">
       <div class="acct-top">
@@ -1727,7 +1754,7 @@ function renderAccounts(){
         <span class="acct-type-badge badge-bank">存款</span>
       </div>
       <div class="acct-balance-row">
-        <div class="acct-stat bal"><div class="al">餘額</div><div class="av">${fmtN(bal)}</div></div>
+        <div class="acct-stat bal"><div class="al">餘額${hasManual?'（手動）':'（自動）'}</div><div class="av">${fmtN(bal)}</div></div>
         <div class="acct-stat used"><div class="al">本月支出</div><div class="av">${fmtN(mExp)}</div></div>
         <div class="acct-stat"><div class="al">本月收入</div><div class="av" style="color:var(--green)">${fmtN(mInc)}</div></div>
       </div>
@@ -1741,15 +1768,21 @@ function renderAccounts(){
     const limit=settings.ccLimit[p.id]||0;
     const bill=settings.ccBill[p.id]||{amount:0,status:'paid',label:'',due:''};
     // ── 核心邏輯：以「實際可用額度」為基準 ──
-    // 1. 帳單金額（手動填，已繳清則0）
+    // 1. 帳單金額（已繳清則0）
     const billAmt = bill.status==='paid' ? 0 : (bill.manualAmount!=null ? bill.manualAmount : bill.amount||0);
-    // 2. 實際可用額度（從銀行App手動填）
-    const avail = (settings.ccAvail && settings.ccAvail[p.id] > 0)
-      ? settings.ccAvail[p.id] : limit - billAmt;
-    // 3. 未出帳 = 總額度 - 可用額度 - 帳單未繳（自動推算，含分期占額）
-    const unbilled = Math.max(0, limit - avail - billAmt);
-    // 4. 自動計算本期刷卡記錄（供參考）
+    // 2. 本期記帳累計未出帳
     const autoUnbilled = calcCCUnbilled(p.id);
+    // 3. 分期剩餘佔額（僅顯示用，不影響可用額度計算）
+    const instOccupied = calcInstCCOccupied(p.id);
+    // 4. 可用額度（有手動填優先，否則用總額度-帳單-本期刷卡）
+    const hasManualAvail = settings.ccAvail && settings.ccAvail[p.id] > 0;
+    const avail = hasManualAvail
+      ? settings.ccAvail[p.id]
+      : Math.max(0, limit - billAmt - autoUnbilled);
+    // 5. 推算未出帳
+    const unbilled = hasManualAvail
+      ? Math.max(0, limit - avail - billAmt)
+      : autoUnbilled;
     const used = limit - avail;
     const pct = limit>0?Math.min(100,Math.round(used/limit*100)):0;
     const cls = pct>=80?'over':pct>=60?'warn':'ok';
@@ -1776,9 +1809,13 @@ function renderAccounts(){
         <div class="pt"><span>額度已用 ${pct}%</span><span>總額度 ${fmtN(limit)}</span></div>
         <div class="bar-track"><div class="budget-fill ${cls}" style="width:${pct}%"></div></div>
       </div>
-      ${p.billingDay?`<div style="font-size:10px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)">
-        <span>本期刷卡記錄：${fmtN(autoUnbilled)}　推算未出帳：${fmtN(unbilled)}</span>
-      </div>`:''}
+      <div style="font-size:10px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:${instOccupied>0?'5px':'0'}">
+          <span>本期刷卡：${fmtN(autoUnbilled)}</span>
+          <span>推算未出帳：${fmtN(unbilled)}</span>
+        </div>
+        ${instOccupied>0?`<div style="color:var(--gold);font-weight:500">尚在分期佔額：${fmtN(instOccupied)}</div>`:''}
+      </div>
     </div>`;
   }).join('');
 
@@ -1930,7 +1967,8 @@ function submitInst(){
   const year=parseInt(document.getElementById('inst-year').value);
   const month=parseInt(document.getElementById('inst-month-sel').value);
   if(!name||!monthly||!total||!year){showToast('請填寫完整資訊');return;}
-  installments.push({id:Date.now(),name,bank,monthly,total,startYear:year,startMonth:month,type:instType});
+  const ccId=document.getElementById('inst-cc-sel')?.value||null;
+  installments.push({id:Date.now(),name,bank,monthly,total,startYear:year,startMonth:month,type:instType,ccId:ccId||null});
   saveAll();closeModal('inst-modal');renderAccounts();showToast('✅ 已新增分期');
 }
 function deleteInst(id){if(!confirm('確定刪除？'))return;installments=installments.filter(i=>i.id!==id);saveAll();renderAccounts();showToast('已刪除');}
@@ -2164,6 +2202,23 @@ function markCCPaid(cardId) {
   showToast('✅ 已標記繳清');
 }
 
+
+// 計算分期剩餘總金額（顯示用，不計入可用額度）
+function calcInstCCOccupied(ccId) {
+  const today = new Date();
+  const curY = today.getFullYear(), curM = today.getMonth();
+  return installments.filter(inst => {
+    if(!inst.ccId || inst.ccId !== ccId) return false;
+    if(inst.type === 'transfer') return false;
+    const done = instDoneCount(inst, curY, curM);
+    return done < inst.total;
+  }).reduce((sum, inst) => {
+    const done = instDoneCount(inst, new Date().getFullYear(), new Date().getMonth());
+    const remaining = inst.total - done;
+    return sum + remaining * inst.monthly;
+  }, 0);
+}
+
 // ====== 帳戶管理 ======
 let _cardStatus = 'paid';
 
@@ -2174,6 +2229,7 @@ function openAddAccount(){
   document.getElementById('acct-modal-title').textContent = '新增帳戶';
   document.getElementById('acct-edit-id').value = '';
   document.getElementById('acct-name-inp').value = '';
+  document.getElementById('acct-init-inp').value = '';
   document.getElementById('acct-bal-inp').value = '';
   document.getElementById('acct-updated-inp').value = '';
   document.getElementById('acct-delete-wrap').style.display = 'none';
@@ -2186,7 +2242,11 @@ function openEditAccount(id){
   document.getElementById('acct-modal-title').textContent = '編輯帳戶';
   document.getElementById('acct-edit-id').value = id;
   document.getElementById('acct-name-inp').value = acct.label;
-  document.getElementById('acct-bal-inp').value = settings.bankBalance[id]||0;
+  const initB = (settings.initialBalance&&settings.initialBalance[id]!=null)?settings.initialBalance[id]:'';
+  document.getElementById('acct-init-inp').value = initB;
+  const manB = settings.bankBalance[id];
+  const initBCheck = (settings.initialBalance&&settings.initialBalance[id]!=null)?settings.initialBalance[id]:null;
+  document.getElementById('acct-bal-inp').value = (manB != null && manB !== initBCheck) ? manB : '';
   document.getElementById('acct-updated-inp').value = acct.updated||'';
   document.getElementById('acct-delete-wrap').style.display = 'block';
   openModal('acct-modal');
@@ -2195,11 +2255,15 @@ function openEditAccount(id){
 function saveAccount(){
   const id = document.getElementById('acct-edit-id').value;
   const label = document.getElementById('acct-name-inp').value.trim();
-  const bal = parseFloat(document.getElementById('acct-bal-inp').value)||0;
+  const initBalVal = document.getElementById('acct-init-inp')?.value;
+  const initBal = initBalVal!=='' && initBalVal!=null ? parseFloat(initBalVal)||0 : null;
+  const manBalVal = document.getElementById('acct-bal-inp')?.value;
+  const bal = manBalVal!=='' && manBalVal!=null ? parseFloat(manBalVal) : null;
   const updated = document.getElementById('acct-updated-inp').value.trim();
   if(!label){showToast('請輸入帳戶名稱');return;}
   if(!settings.accounts) settings.accounts=[];
   if(!settings.bankBalance) settings.bankBalance={};
+  if(!settings.initialBalance) settings.initialBalance={};
   if(id){
     // 編輯
     const idx = settings.accounts.findIndex(a=>a.id===id);
@@ -2207,12 +2271,15 @@ function saveAccount(){
       settings.accounts[idx].label = label;
       settings.accounts[idx].updated = updated;
     }
-    settings.bankBalance[id] = bal;
+    if(initBal !== null) settings.initialBalance[id] = initBal;
+    if(bal !== null) settings.bankBalance[id] = bal;
+    else settings.bankBalance[id] = settings.initialBalance[id]||0; // 清空手動 = 用初始
   } else {
     // 新增
     const newId = 'acct_' + Date.now();
     settings.accounts.push({id:newId, label, updated});
-    settings.bankBalance[newId] = bal;
+    if(initBal !== null) settings.initialBalance[newId] = initBal;
+    settings.bankBalance[newId] = initBal||0;
     // 同步加入 PAYMENTS
     PAYMENTS.push({id:newId, label, type:'bank', updated});
   }
