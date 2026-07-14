@@ -758,6 +758,30 @@ body{
   </div>
 </div>
 
+
+<!-- 帳戶轉帳 MODAL -->
+<div class="modal-overlay hidden" id="transfer-modal">
+  <div class="modal-box">
+    <h3>🔄 帳戶轉帳</h3>
+    <div class="modal-label">從</div>
+    <select class="text-inp" id="transfer-from" style="cursor:pointer">
+    </select>
+    <div class="modal-label">轉到</div>
+    <select class="text-inp" id="transfer-to" style="cursor:pointer">
+    </select>
+    <div class="modal-label">金額</div>
+    <input type="number" class="text-inp" id="transfer-amount" placeholder="0">
+    <div class="modal-label">日期</div>
+    <input type="date" class="text-inp" id="transfer-date">
+    <div class="modal-label">備註（選填）</div>
+    <input type="text" class="text-inp" id="transfer-note" placeholder="例：薪水入帳、生活費">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('transfer-modal')">取消</button>
+      <button class="btn-confirm" onclick="submitTransfer()">✓ 確認轉帳</button>
+    </div>
+  </div>
+</div>
+
 <!-- 新增固定支出 MODAL -->
 <div class="modal-overlay hidden" id="fixed-modal">
   <div class="modal-box">
@@ -933,6 +957,7 @@ const TYPES=[
   {id:'subscription',label:'訂閱', icon:'📋', cls:'t-subscription'},
   {id:'advance',   label:'代墊',   icon:'💛', cls:'t-advance'},
   {id:'mom',       label:'媽媽卡', icon:'💗', cls:'t-mom'},
+  {id:'transfer',  label:'帳戶轉帳',icon:'🔄', cls:'t-saving'},
 ];
 
 // 所有 items 結尾都有「其他（手動輸入）」
@@ -975,6 +1000,7 @@ const CATS={
     {id:'other_sub',label:'其他',icon:'📌',items:['其他（手動輸入）']},
   ],
   advance:[{id:'adv',label:'代墊款',icon:'💛',items:['其他（手動輸入）']}],
+  transfer:[{id:'transfer_move',label:'帳戶轉帳',icon:'🔄',items:['帳戶互轉','其他（手動輸入）']}],
   mom:[
     {id:'mom_food',  label:'餐飲',icon:'🍜',items:['早餐','午餐','晚餐','飲料','其他（手動輸入）']},
     {id:'mom_fuel',  label:'加油',icon:'⛽',items:['加油','其他（手動輸入）']},
@@ -1229,8 +1255,8 @@ function monthRecs(){
 function updateSummary(){
   const mr=monthRecs();
   // 媽媽卡不計入總支出
-  const inc=mr.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
-  const exp=mr.filter(r=>['expense','subscription','advance'].includes(r.type)).reduce((s,r)=>s+r.amount,0);
+  const inc=mr.filter(r=>r.type==='income'&&!r.isTransfer).reduce((s,r)=>s+r.amount,0);
+  const exp=mr.filter(r=>['expense','subscription','advance'].includes(r.type)&&!r.isTransfer).reduce((s,r)=>s+r.amount,0);
   const net=inc-exp;
   const fmtCormorant=(n,col)=>`<span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:${col};font-variant-numeric:tabular-nums">${n<0?'-':''}${Math.abs(Math.round(n)).toLocaleString()}</span>`;
   document.getElementById('sum-income').innerHTML=fmtCormorant(inc,'var(--green)');
@@ -1324,7 +1350,15 @@ function renderStep(){
   }
 }
 function goStep(s){step=s;renderStep();}
-function selType(t){draft.type=t;draft.cat=null;draft.item=null;step=1;renderStep();}
+function selType(t){
+  if(t==='transfer'){
+    openTransferModal();
+    draft={type:null,cat:null,item:null,amount:'',payment:null,note:'',tags:{adv:false,wed:false},advPerson:'',date:''};
+    step=0;renderStep();
+    return;
+  }
+  draft.type=t;draft.cat=null;draft.item=null;step=1;renderStep();
+}
 function selCat(c){draft.cat=c;step=2;renderStep();}
 function selItem(i){draft.item=i;step=3;renderStep();}
 function selManual(){
@@ -1412,7 +1446,8 @@ function renderRecords(){
       ${rs.map(r=>{
         const pay=PAYMENTS.find(p=>p.id===r.payment);
         const isInc=r.type==='income'||r.type==='saving'||r.type==='invest';
-        const col=isInc?'var(--green)':r.isMom?'var(--pink)':'var(--red)';
+        const isTransferRec=r.isTransfer;
+        const col=isTransferRec?'var(--blue)':isInc?'var(--green)':r.isMom?'var(--pink)':'var(--red)';
         const bg=r.isMom?'var(--pink-bg)':r.type==='subscription'?'var(--purple-bg)':r.type==='income'?'var(--green-bg)':r.type==='advance'?'var(--yellow-bg)':'var(--red-bg)';
         const badges=[
           r.isMom?'<span class="rec-badge badge-mom">媽媽卡</span>':'',
@@ -2269,6 +2304,52 @@ function exportExcel(){
   const today=new Date();
   XLSX.writeFile(wb,`H&L記帳_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}.xlsx`);
   showToast('✅ Excel 已匯出');
+}
+
+
+// ====== 帳戶轉帳 ======
+function openTransferModal(){
+  const accts = settings.accounts || PAYMENTS.filter(p=>p.type==='bank').map(p=>({id:p.id,label:p.label}));
+  const opts = accts.map(a=>`<option value="${a.id}">${a.label}</option>`).join('');
+  document.getElementById('transfer-from').innerHTML = opts;
+  document.getElementById('transfer-to').innerHTML = opts;
+  // 預設 to 選第二個
+  if(document.getElementById('transfer-to').options.length > 1)
+    document.getElementById('transfer-to').selectedIndex = 1;
+  document.getElementById('transfer-amount').value = '';
+  document.getElementById('transfer-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('transfer-note').value = '';
+  openModal('transfer-modal');
+}
+
+function submitTransfer(){
+  const fromId = document.getElementById('transfer-from').value;
+  const toId = document.getElementById('transfer-to').value;
+  const amount = parseFloat(document.getElementById('transfer-amount').value);
+  const date = document.getElementById('transfer-date').value;
+  const note = document.getElementById('transfer-note').value.trim();
+  if(!fromId||!toId){showToast('請選擇帳戶');return;}
+  if(fromId===toId){showToast('轉出和轉入帳戶不能相同');return;}
+  if(!amount||amount<=0){showToast('請輸入金額');return;}
+  const fromAcct = (settings.accounts||PAYMENTS).find(a=>a.id===fromId);
+  const toAcct = (settings.accounts||PAYMENTS).find(a=>a.id===toId);
+  const now = Date.now();
+  // 轉出：支出
+  records.push({
+    id:now, type:'expense', cat:'transfer_out', catLabel:'轉出',catIcon:'🔄',
+    item:`轉至 ${toAcct?.label||toId}`, amount, payment:fromId,
+    note, date, tags:{adv:false,wed:false}, advPerson:'', isMom:false,
+    transferTo:toId, isTransfer:true
+  });
+  // 轉入：收入
+  records.push({
+    id:now+1, type:'income', cat:'transfer_in', catLabel:'轉入', catIcon:'🔄',
+    item:`從 ${fromAcct?.label||fromId} 轉入`, amount, payment:toId,
+    note, date, tags:{adv:false,wed:false}, advPerson:'', isMom:false,
+    transferFrom:fromId, isTransfer:true
+  });
+  saveAll(); closeModal('transfer-modal'); updateAll();
+  showToast(`✅ 已轉帳 ${fmtN(amount)}`);
 }
 
 // ====== MODAL / NAV / TOAST ======
