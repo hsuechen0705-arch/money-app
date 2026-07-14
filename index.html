@@ -1751,8 +1751,9 @@ function renderAccounts(){
     const autoUnbilled=calcCCUnbilled(p.id);
     const instOccupied=calcInstCCOccupied(p.id);
     const hasManualAvail=settings.ccAvail&&settings.ccAvail[p.id]>0;
-    const avail=hasManualAvail?settings.ccAvail[p.id]:Math.max(0,limit-billAmt-autoUnbilled);
-    const unbilled=hasManualAvail?Math.max(0,limit-avail-billAmt):autoUnbilled;
+    const avail=hasManualAvail?settings.ccAvail[p.id]:Math.max(0,limit-billAmt-autoUnbilled-instOccupied);
+    // 未出帳 = 總額度 - 可用額度 - 帳單 - 分期佔額
+    const unbilled=Math.max(0,limit-avail-billAmt-instOccupied);
     const used=limit-avail;
     const pct=limit>0?Math.min(100,Math.round(used/limit*100)):0;
     const cls=pct>=80?'over':pct>=60?'warn':'ok';
